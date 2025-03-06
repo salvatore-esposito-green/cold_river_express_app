@@ -5,10 +5,6 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-dependencies {
-    implementation("com.google.zxing:core:3.5.2")
-}
-
 android {
     namespace = "com.salvad0r.cold_river_express_app"
     compileSdk = flutter.compileSdkVersion
@@ -28,7 +24,7 @@ android {
         applicationId = "com.salvad0r.cold_river_express_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 21
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

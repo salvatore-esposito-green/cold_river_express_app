@@ -1,7 +1,8 @@
 import 'dart:io';
-import 'package:cold_river_express_app/services/netum_printer.dart';
+import 'package:cold_river_express_app/providers/printer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class InventoryDetailsScreen extends StatefulWidget {
@@ -16,37 +17,34 @@ class InventoryDetailsScreen extends StatefulWidget {
 class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
   bool isLoading = false;
 
-  Future<void> printQR(BuildContext context) async {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    setState(() {
-      isLoading = true;
-    });
-
-    final printResult = await NetumPrinter.printQRCode(widget.inventory.id);
-
-    final message =
-        printResult.success
-            ? 'Badge printed successfully!'
-            : 'Printing failed: ${printResult.errorMessage}';
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (mounted) {
-      scaffoldMessenger.showSnackBar(SnackBar(content: Text(message)));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final printerService = Provider.of<BluetoothPrinterProvider>(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Inventory Details')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
+            Text(
+              printerService.isConnected
+                  ? "Stampante Connessa"
+                  : "Nessuna Stampante Connessa",
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await printerService.scanBluetoothDevices();
+                _showDeviceSelection(context, printerService);
+              },
+              child: Text("Trova Stampanti"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await printerService.disconnect();
+              },
+              child: Text("Disconnetti"),
+            ),
             Center(
               child: QrImageView(
                 data: widget.inventory.id,
@@ -63,7 +61,11 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                printQR(context);
+                printerService.print(
+                  widget.inventory.id,
+                  widget.inventory.boxNumber,
+                  widget.inventory.contents.join(', '),
+                );
               },
               child: const Text("Print"),
             ),
@@ -91,6 +93,37 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showDeviceSelection(
+    BuildContext context,
+    BluetoothPrinterProvider printerService,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Seleziona una stampante"),
+          content:
+              printerService.bluetoothDevices.isEmpty
+                  ? Text("Nessun dispositivo trovato.")
+                  : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children:
+                        printerService.bluetoothDevices.map((device) {
+                          return ListTile(
+                            title: Text(device.name ?? "Sconosciuto"),
+                            subtitle: Text(device.macAdress),
+                            onTap: () async {
+                              await printerService.connect(device.macAdress);
+                              Navigator.pop(context);
+                            },
+                          );
+                        }).toList(),
+                  ),
+        );
+      },
     );
   }
 }
