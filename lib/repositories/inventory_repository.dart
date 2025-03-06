@@ -16,6 +16,10 @@ class InventoryRepository {
     return await dbHelper.getInventory(id);
   }
 
+  Future<int> updateInventory(Inventory inventory) async {
+    return await dbHelper.updateInventory(inventory);
+  }
+
   Future<int> deleteInventoryById(String id) async {
     return await dbHelper.deleteInventory(id);
   }

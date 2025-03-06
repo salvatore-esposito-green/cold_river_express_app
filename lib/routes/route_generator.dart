@@ -1,6 +1,7 @@
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/screens/home_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_details_screen.dart';
+import 'package:cold_river_express_app/screens/inventory_edit_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_insert_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_search_screen.dart';
 import 'package:cold_river_express_app/screens/qr_scan_screen.dart';
@@ -18,6 +19,11 @@ class RouteGenerator {
         );
       case '/insert':
         return MaterialPageRoute(builder: (_) => InventoryInsertScreen());
+      case '/edit':
+        final inventory = settings.arguments as Inventory;
+        return MaterialPageRoute(
+          builder: (_) => InventoryEditScreen(inventory: inventory),
+        );
       case '/search':
         return MaterialPageRoute(builder: (_) => InventorySearchScreen());
       case '/qr':

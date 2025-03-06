@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 class QRScanScreen extends StatefulWidget {
@@ -40,11 +41,10 @@ class QRScanScreenState extends State<QRScanScreen> {
         var inventory = await _repository.getInventoryById(scanData.code!);
 
         if (inventory != null) {
-          Navigator.pushReplacementNamed(
-            context,
-            '/details',
-            arguments: inventory,
-          );
+          HapticFeedback.vibrate();
+
+          Navigator.pushNamed(context, '/details', arguments: inventory);
+
           controller.pauseCamera();
         } else {
           ScaffoldMessenger.of(

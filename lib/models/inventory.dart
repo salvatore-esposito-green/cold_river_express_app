@@ -42,4 +42,24 @@ class Inventory {
       'lastUpdated': lastUpdated.toIso8601String(),
     };
   }
+
+  Inventory copyWith({
+    String? id,
+    String? boxNumber,
+    List<String>? contents,
+    String? imagePath,
+    String? size,
+    String? position,
+    DateTime? lastUpdated,
+  }) {
+    return Inventory(
+      id: id ?? this.id,
+      boxNumber: boxNumber ?? this.boxNumber,
+      contents: contents ?? this.contents,
+      imagePath: imagePath ?? this.imagePath,
+      size: size ?? this.size,
+      position: position ?? this.position,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+    );
+  }
 }

@@ -81,12 +81,12 @@ class BluetoothPrinterProvider extends ChangeNotifier {
   Future<void> print(String qrCodeId, String boxNumber, String contents) async {
     bool connectionStatus = await PrintBluetoothThermal.connectionStatus;
     if (connectionStatus) {
-      List<int> ticket = await _generatePrintTicket(
+      List<int> label = await _generatePrintLabel(
         qrCodeId,
         boxNumber,
         contents,
       );
-      await PrintBluetoothThermal.writeBytes(ticket);
+      await PrintBluetoothThermal.writeBytes(label);
     } else {
       _isConnected = false;
       notifyListeners();
@@ -112,7 +112,7 @@ class BluetoothPrinterProvider extends ChangeNotifier {
     return image;
   }
 
-  Future<List<int>> _generatePrintTicket(
+  Future<List<int>> _generatePrintLabel(
     String qrCodeId,
     String boxNumber,
     String contents,

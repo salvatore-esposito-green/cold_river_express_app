@@ -1,5 +1,8 @@
+import 'dart:io';
+
+import 'package:cold_river_express_app/services/image_picking_service.dart';
+import 'package:cold_river_express_app/widgets/speech_to_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
@@ -14,7 +17,6 @@ class InventoryInsertScreen extends StatefulWidget {
 class InventoryInsertScreenState extends State<InventoryInsertScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _boxNumberController = TextEditingController();
   final TextEditingController _contentsController = TextEditingController();
   final TextEditingController _positionController = TextEditingController();
 
@@ -24,25 +26,11 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
   final List<String> _boxSides = ['60x40x40', '80x40x40', 'Custom'];
 
   final InventoryRepository _repository = InventoryRepository();
-  final ImagePicker _picker = ImagePicker();
+  final ImagePickingService _imagePickingService = ImagePickingService();
 
-  Future<void> _pickImage() async {
-    try {
-      final XFile? media = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 768,
-        imageQuality: 80,
-      );
-
-      if (media != null) {
-        setState(() {
-          _imagePath = media.path;
-        });
-      }
-    } catch (e) {
-      print('Error picking image: $e');
-    }
+  @override
+  void initState() {
+    super.initState();
   }
 
   List<String> _parseContents(String text) {
@@ -53,16 +41,28 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
         .toList();
   }
 
+  Future<int> _getNextBoxNumber() async {
+    List<Inventory> inventories = await _repository.fetchAllInventories();
+    if (inventories.isEmpty) return 1;
+
+    int maxBoxNumber = inventories
+        .map((inv) => int.tryParse(inv.boxNumber) ?? 0)
+        .reduce((a, b) => a > b ? a : b);
+    return maxBoxNumber + 1;
+  }
+
   Future<void> _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
       var uuid = Uuid();
       String id = uuid.v4();
 
+      int nextBoxNumber = await _getNextBoxNumber();
+
       List<String> contentsList = _parseContents(_contentsController.text);
 
       Inventory newInventory = Inventory(
         id: id,
-        boxNumber: _boxNumberController.text,
+        boxNumber: nextBoxNumber.toString(),
         contents: contentsList,
         imagePath: _imagePath ?? '',
         size: _selectedSide ?? _boxSides.first,
@@ -78,7 +78,6 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
         ).showSnackBar(SnackBar(content: Text('Inventory item added!')));
 
         setState(() {
-          _boxNumberController.clear();
           _contentsController.clear();
           _positionController.clear();
           _imagePath = null;
@@ -96,7 +95,6 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
 
   @override
   void dispose() {
-    _boxNumberController.dispose();
     _contentsController.dispose();
     _positionController.dispose();
     super.dispose();
@@ -112,43 +110,47 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              TextFormField(
-                controller: _boxNumberController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Box Number'),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? 'Please enter a box number'
-                            : null,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _contentsController,
-                decoration: InputDecoration(
-                  labelText: 'Contents',
-                  hintText:
-                      'Enter items separated by commas, e.g. item1, item2, item3',
-                ),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? 'Please enter contents'
-                            : null,
-              ),
-              SizedBox(height: 16),
-              Row(
+              Stack(
                 children: [
-                  Expanded(
-                    child: Text(
-                      _imagePath == null
-                          ? 'No image selected'
-                          : 'Image selected',
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child:
+                        _imagePath != null
+                            ? Image.file(File(_imagePath!), fit: BoxFit.cover)
+                            : Center(
+                              child: Text(
+                                'No image selected',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      tooltip: 'Take a picture',
+                      onPressed: () async {
+                        var imagePath = await _imagePickingService.pickImage();
+
+                        if (imagePath != null) {
+                          setState(() {
+                            _imagePath = imagePath;
+                          });
+                        }
+                      },
                     ),
                   ),
-                  IconButton(icon: Icon(Icons.image), onPressed: _pickImage),
                 ],
               ),
+              SizedBox(height: 16),
+              SpeechToTextField(controller: _contentsController),
               SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _selectedSide,
@@ -175,17 +177,9 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
               TextFormField(
                 controller: _positionController,
                 decoration: InputDecoration(labelText: 'Position'),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? 'Please enter a position'
-                            : null,
               ),
               SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _submitForm,
-                child: Text('Insert Inventory'),
-              ),
+              ElevatedButton(onPressed: _submitForm, child: Text('Insert')),
             ],
           ),
         ),

@@ -76,6 +76,17 @@ class DBHelper {
     return null;
   }
 
+  Future<int> updateInventory(Inventory inventory) async {
+    final db = await database;
+
+    return await db.update(
+      'inventory',
+      inventory.toMap(),
+      where: 'id = ?',
+      whereArgs: [inventory.id],
+    );
+  }
+
   Future<int> deleteInventory(String id) async {
     final db = await database;
 
