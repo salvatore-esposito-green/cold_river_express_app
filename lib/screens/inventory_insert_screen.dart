@@ -19,6 +19,7 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
 
   final TextEditingController _contentsController = TextEditingController();
   final TextEditingController _positionController = TextEditingController();
+  final TextEditingController _environmentController = TextEditingController();
 
   String? _selectedSide = '60x40x40';
   String? _imagePath;
@@ -67,6 +68,7 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
         imagePath: _imagePath ?? '',
         size: _selectedSide ?? _boxSides.first,
         position: _positionController.text,
+        environment: _environmentController.text,
         lastUpdated: DateTime.now(),
       );
 
@@ -103,39 +105,31 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Insert Inventory')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              Stack(
+      appBar: AppBar(title: Text('Insert Inventory'), centerTitle: true),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            expandedHeight: 250,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
                 children: [
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    color: Colors.grey[300],
-                    child:
-                        _imagePath != null
-                            ? Image.file(File(_imagePath!), fit: BoxFit.cover)
-                            : Center(
-                              child: Text(
-                                'No image selected',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
+                  _imagePath != null && _imagePath!.isNotEmpty
+                      ? Hero(
+                        tag: _imagePath!,
+                        transitionOnUserGestures: true,
+                        child: Image.file(File(_imagePath!), fit: BoxFit.cover),
+                      )
+                      : Container(color: Theme.of(context).colorScheme.primary),
+                  Center(
                     child: IconButton(
+                      iconSize: 60,
                       icon: Icon(
                         Icons.camera_alt,
-                        color: Colors.white,
-                        size: 30,
+                        color: Theme.of(context).colorScheme.onPrimary,
                       ),
-                      tooltip: 'Take a picture',
                       onPressed: () async {
                         var imagePath = await _imagePickingService.pickImage();
 
@@ -149,40 +143,64 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
-              SpeechToTextField(controller: _contentsController),
-              SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedSide,
-                decoration: InputDecoration(labelText: 'Box Side'),
-                items:
-                    _boxSides
-                        .map(
-                          (side) =>
-                              DropdownMenuItem(value: side, child: Text(side)),
-                        )
-                        .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedSide = value;
-                  });
-                },
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? 'Please select a box side'
-                            : null,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _positionController,
-                decoration: InputDecoration(labelText: 'Position'),
-              ),
-              SizedBox(height: 32),
-              ElevatedButton(onPressed: _submitForm, child: Text('Insert')),
-            ],
+            ),
           ),
-        ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      SpeechToTextField(controller: _contentsController),
+                      SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedSide,
+                        decoration: InputDecoration(labelText: 'Box Side'),
+                        items:
+                            _boxSides
+                                .map(
+                                  (side) => DropdownMenuItem(
+                                    value: side,
+                                    child: Text(side),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedSide = value;
+                          });
+                        },
+                        validator:
+                            (value) =>
+                                value == null || value.isEmpty
+                                    ? 'Please select a box side'
+                                    : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: _positionController,
+                        decoration: InputDecoration(labelText: 'Position'),
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: _environmentController,
+                        decoration: InputDecoration(labelText: 'Environment'),
+                      ),
+                      SizedBox(height: 32),
+                      ElevatedButton(
+                        onPressed: _submitForm,
+                        child: Text('Insert'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ]),
+          ),
+        ],
       ),
     );
   }

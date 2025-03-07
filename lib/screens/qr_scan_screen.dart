@@ -64,7 +64,11 @@ class QRScanScreenState extends State<QRScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Scan QR Code')),
+      appBar: AppBar(
+        title: Text('Scan QR Code'),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
       body: Column(
         children: <Widget>[
           Row(

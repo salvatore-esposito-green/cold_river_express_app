@@ -19,6 +19,7 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
 
   late TextEditingController _contentsController;
   late TextEditingController _positionController;
+  late TextEditingController _environmentController;
 
   String? _selectedSide;
   String? _imagePath;
@@ -38,6 +39,9 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
     _positionController = TextEditingController(
       text: widget.inventory.position,
     );
+    _environmentController = TextEditingController(
+      text: widget.inventory.environment,
+    );
     _selectedSide = widget.inventory.size;
     _imagePath = widget.inventory.imagePath;
   }
@@ -46,6 +50,7 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
   void dispose() {
     _contentsController.dispose();
     _positionController.dispose();
+    _environmentController.dispose();
     super.dispose();
   }
 
@@ -55,6 +60,7 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
         contents:
             _contentsController.text.split(',').map((s) => s.trim()).toList(),
         position: _positionController.text,
+        environment: _environmentController.text,
         size: _selectedSide,
         imagePath: _imagePath,
         lastUpdated: DateTime.now(),
@@ -71,68 +77,104 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Modify Box N. ${widget.inventory.boxNumber}'),
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              _imagePath != null && _imagePath!.isNotEmpty
-                  ? Image.file(
-                    File(_imagePath!),
-                    height: 200,
-                    fit: BoxFit.cover,
-                  )
-                  : Container(
-                    height: 200,
-                    color: Colors.grey[300],
-                    child: const Center(child: Text("No image available")),
-                  ),
-              ElevatedButton(
-                onPressed: () async {
-                  final pickedImagePath = await _pickerService.pickImage();
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            expandedHeight: 250,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _imagePath != null && _imagePath!.isNotEmpty
+                      ? Hero(
+                        tag: widget.inventory.id,
+                        child: Image.file(File(_imagePath!), fit: BoxFit.cover),
+                      )
+                      : Container(color: Theme.of(context).colorScheme.primary),
+                  Center(
+                    child: IconButton(
+                      iconSize: 60,
+                      icon: Icon(
+                        Icons.camera_alt,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      onPressed: () async {
+                        final pickedImagePath =
+                            await _pickerService.pickImage();
 
-                  if (pickedImagePath != null) {
-                    setState(() {
-                      _imagePath = pickedImagePath;
-                    });
-                  }
-                },
-                child: const Text("Change Image"),
+                        if (pickedImagePath != null) {
+                          setState(() {
+                            _imagePath = pickedImagePath;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              SpeechToTextField(controller: _contentsController),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedSide,
-                decoration: const InputDecoration(labelText: 'Box Side'),
-                items:
-                    _boxSides
-                        .map(
-                          (side) =>
-                              DropdownMenuItem(value: side, child: Text(side)),
-                        )
-                        .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedSide = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _positionController,
-                decoration: const InputDecoration(labelText: 'Position'),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _saveChanges,
-                child: const Text("Save"),
-              ),
-            ],
+            ),
           ),
-        ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      SpeechToTextField(controller: _contentsController),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedSide,
+                        decoration: const InputDecoration(
+                          labelText: 'Box Side',
+                        ),
+                        items:
+                            _boxSides
+                                .map(
+                                  (side) => DropdownMenuItem(
+                                    value: side,
+                                    child: Text(side),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedSide = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _positionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Position',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _environmentController,
+                        decoration: const InputDecoration(
+                          labelText: 'Environment',
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      ElevatedButton(
+                        onPressed: _saveChanges,
+                        child: const Text("Save"),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ]),
+          ),
+        ],
       ),
     );
   }

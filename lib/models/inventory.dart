@@ -6,7 +6,8 @@ class Inventory {
   final List<String> contents;
   final String? imagePath;
   final String size;
-  final String position;
+  final String? position;
+  final String? environment;
   final DateTime lastUpdated;
 
   Inventory({
@@ -15,7 +16,8 @@ class Inventory {
     required this.contents,
     this.imagePath,
     required this.size,
-    required this.position,
+    this.position,
+    this.environment,
     required this.lastUpdated,
   });
 
@@ -27,6 +29,7 @@ class Inventory {
       imagePath: map['imagePath'],
       size: map['size'],
       position: map['position'],
+      environment: map['environment'],
       lastUpdated: DateTime.parse(map['lastUpdated']),
     );
   }
@@ -39,6 +42,7 @@ class Inventory {
       'imagePath': imagePath,
       'size': size,
       'position': position,
+      'environment': environment,
       'lastUpdated': lastUpdated.toIso8601String(),
     };
   }
@@ -50,6 +54,7 @@ class Inventory {
     String? imagePath,
     String? size,
     String? position,
+    String? environment,
     DateTime? lastUpdated,
   }) {
     return Inventory(
@@ -59,6 +64,7 @@ class Inventory {
       imagePath: imagePath ?? this.imagePath,
       size: size ?? this.size,
       position: position ?? this.position,
+      environment: environment ?? this.environment,
       lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }

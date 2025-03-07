@@ -20,11 +20,37 @@ class InventoryRepository {
     return await dbHelper.updateInventory(inventory);
   }
 
+  Future<void> updateInventoriesPosition(
+    List<String> ids,
+    String position,
+  ) async {
+    await dbHelper.updateInventoriesPosition(ids, position);
+  }
+
   Future<int> deleteInventoryById(String id) async {
     return await dbHelper.deleteInventory(id);
   }
 
   Future<List<Inventory>> freeSearchInventory(String query) async {
     return await dbHelper.freeSearchInventory(query);
+  }
+
+  Future<List<Inventory>> filterInventory(
+    String? environment,
+    String? position,
+  ) async {
+    if (environment == null && position == null) {
+      return await fetchAllInventories();
+    }
+
+    return await dbHelper.filterInventory(environment, position);
+  }
+
+  Future<List<String>> getLabelForEnvironment() async {
+    return await dbHelper.getLabelForEnvironment();
+  }
+
+  Future<List<String>> getLabelForPosition() async {
+    return await dbHelper.getLabelForPosition();
   }
 }

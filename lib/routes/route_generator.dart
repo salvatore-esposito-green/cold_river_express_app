@@ -5,6 +5,7 @@ import 'package:cold_river_express_app/screens/inventory_edit_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_insert_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_search_screen.dart';
 import 'package:cold_river_express_app/screens/qr_scan_screen.dart';
+import 'package:cold_river_express_app/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 
 class RouteGenerator {
@@ -28,6 +29,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => InventorySearchScreen());
       case '/qr':
         return MaterialPageRoute(builder: (_) => QRScanScreen());
+      case '/settings':
+        return MaterialPageRoute(builder: (_) => SettingsScreen());
       default:
         return _errorRoute(settings.name ?? 'unknown');
     }

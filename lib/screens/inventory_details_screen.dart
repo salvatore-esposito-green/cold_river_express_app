@@ -33,11 +33,15 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
       appBar: AppBar(
         title: Text('Box N. ${_currentInventory.boxNumber}'),
         centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           PopupMenuButton<String>(
             icon: Icon(
               Icons.print,
-              color: printerService.isConnected ? Colors.green : Colors.red,
+              color:
+                  printerService.isConnected
+                      ? Theme.of(context).iconTheme.color
+                      : Theme.of(context).colorScheme.errorContainer,
             ),
             onSelected: (value) async {
               if (value == 'trova') {
@@ -82,8 +86,15 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                         ),
                       )
                       : Container(
-                        color: Colors.grey,
-                        child: const Center(child: Text("No image available")),
+                        color: Theme.of(context).colorScheme.primary,
+                        child: Center(
+                          child: Text(
+                            "No image available",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
                       ),
                   Positioned(
                     bottom: 8,
@@ -131,10 +142,13 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          "ID: ${_currentInventory.id}",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
+                        Flexible(
+                          child: Text(
+                            "ID: ${_currentInventory.id}",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                            softWrap: true,
+                          ),
                         ),
                       ],
                     ),
@@ -184,16 +198,29 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Position:"),
-                        Text(
-                          _currentInventory.position,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
+                    if (_currentInventory.position?.isNotEmpty ?? false)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Position:"),
+                          Text(
+                            _currentInventory.position!,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 16),
+                    if (_currentInventory.environment?.isNotEmpty ?? false)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Environment:"),
+                          Text(
+                            _currentInventory.environment!,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
