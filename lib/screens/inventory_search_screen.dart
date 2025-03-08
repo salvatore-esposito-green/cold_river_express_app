@@ -259,7 +259,7 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
     return Scaffold(
       appBar: AppBar(
         leading: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(left: 16),
           child: Image.asset(
             'assets/icons/icon-appbar.png',
             fit: BoxFit.contain,
@@ -272,12 +272,15 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              FocusScope.of(context).unfocus();
-              Navigator.pushNamed(context, '/settings');
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                FocusScope.of(context).unfocus();
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
           ),
         ],
       ),
