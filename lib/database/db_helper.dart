@@ -7,6 +7,8 @@ import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
+final String version = "5";
+
 class DBHelper {
   static final DBHelper _instance = DBHelper._internal();
   factory DBHelper() => _instance;
@@ -16,19 +18,16 @@ class DBHelper {
 
   Future<Database> get database async {
     if (_database == null) {
-      _database = await _initDB('inventoryColdRiver.db');
+      _database = await _initDB('inventor_version_$version.db');
     } else {
       int currentVersion = await _database!.getVersion();
-      int requiredVersion = 4;
 
-      if (currentVersion < requiredVersion) {
+      if (currentVersion < int.parse(version)) {
         if (kDebugMode) {
-          print(
-            'Upgrading database from version $currentVersion to $requiredVersion',
-          );
+          print('Upgrading database from version $currentVersion to $version');
         }
 
-        _database = await _initDB('inventoryColdRiver.db');
+        _database = await _initDB('inventor_version_$version.db');
       }
     }
     return _database!;

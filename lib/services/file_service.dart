@@ -19,7 +19,7 @@ class FileService {
     final directory = await getExternalStorageDirectory();
     if (directory == null) return null;
 
-    final newPath = "${directory.path}/inventoryColdRiver.db";
+    final newPath = "${directory.path}/inventor_version_$version.db";
     final newFile = File(newPath);
 
     await dbFile.copy(newPath);

@@ -4,6 +4,8 @@ import 'package:cold_river_express_app/services/file_service.dart';
 class SettingsScreen extends StatelessWidget {
   final FileService _fileService = FileService();
 
+  SettingsScreen({super.key});
+
   Future<void> shareDatabase(BuildContext context) async {
     final sharedRes = await _fileService.shareDatabase();
 

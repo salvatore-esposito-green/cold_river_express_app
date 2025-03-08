@@ -186,11 +186,11 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                         color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
-                    : inventory.imagePath?.isNotEmpty == true
+                    : inventory.image_path?.isNotEmpty == true
                     ? Hero(
                       tag: inventory.id,
                       child: CircleAvatar(
-                        backgroundImage: FileImage(File(inventory.imagePath!)),
+                        backgroundImage: FileImage(File(inventory.image_path!)),
                         radius: 24,
                       ),
                     )
@@ -202,7 +202,7 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                       ),
                     ),
           ),
-          title: Text('Box N. ${inventory.boxNumber}'),
+          title: Text('Box N. ${inventory.box_number}'),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

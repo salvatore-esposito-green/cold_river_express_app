@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cold_river_express_app/services/image_picking_service.dart';
+import 'package:cold_river_express_app/widgets/autocomplete_field.dart';
 import 'package:cold_river_express_app/widgets/speech_to_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -25,6 +26,8 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
   String? _imagePath;
 
   final List<String> _boxSides = ['60x40x40', '80x40x40', 'Custom'];
+  List<String> _positionSuggestions = [];
+  List<String> _environmentSuggestions = [];
 
   final InventoryRepository _repository = InventoryRepository();
   final ImagePickingService _imagePickingService = ImagePickingService();
@@ -32,6 +35,8 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
   @override
   void initState() {
     super.initState();
+    _loadPositionSuggestions();
+    _loadEnvironmentSuggestions();
   }
 
   List<String> _parseContents(String text) {
@@ -47,7 +52,7 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
     if (inventories.isEmpty) return 1;
 
     int maxBoxNumber = inventories
-        .map((inv) => int.tryParse(inv.boxNumber) ?? 0)
+        .map((inv) => int.tryParse(inv.box_number) ?? 0)
         .reduce((a, b) => a > b ? a : b);
     return maxBoxNumber + 1;
   }
@@ -63,13 +68,19 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
 
       Inventory newInventory = Inventory(
         id: id,
-        boxNumber: nextBoxNumber.toString(),
+        box_number: nextBoxNumber.toString(),
         contents: contentsList,
-        imagePath: _imagePath ?? '',
+        image_path: _imagePath ?? '',
         size: _selectedSide ?? _boxSides.first,
-        position: _positionController.text,
-        environment: _environmentController.text,
-        lastUpdated: DateTime.now(),
+        position:
+            _positionController.text.isNotEmpty
+                ? _positionController.text
+                : null,
+        environment:
+            _environmentController.text.isNotEmpty
+                ? _environmentController.text
+                : null,
+        last_updated: DateTime.now(),
       );
 
       await _repository.addInventory(newInventory);
@@ -95,10 +106,27 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
     }
   }
 
+  Future<void> _loadPositionSuggestions() async {
+    final positions = await _repository.getLabelForPosition();
+
+    setState(() {
+      _positionSuggestions = positions;
+    });
+  }
+
+  Future<void> _loadEnvironmentSuggestions() async {
+    final environments = await _repository.getLabelForEnvironment();
+
+    setState(() {
+      _environmentSuggestions = environments;
+    });
+  }
+
   @override
   void dispose() {
     _contentsController.dispose();
     _positionController.dispose();
+    _environmentController.dispose();
     super.dispose();
   }
 
@@ -180,14 +208,16 @@ class InventoryInsertScreenState extends State<InventoryInsertScreen> {
                                     : null,
                       ),
                       SizedBox(height: 16),
-                      TextFormField(
+                      AutocompleteFormField(
                         controller: _positionController,
-                        decoration: InputDecoration(labelText: 'Position'),
+                        labelText: 'Position',
+                        suggestions: _positionSuggestions,
                       ),
                       SizedBox(height: 16),
-                      TextFormField(
+                      AutocompleteFormField(
                         controller: _environmentController,
-                        decoration: InputDecoration(labelText: 'Environment'),
+                        labelText: 'Environment',
+                        suggestions: _environmentSuggestions,
                       ),
                       SizedBox(height: 32),
                       ElevatedButton(

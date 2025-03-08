@@ -2,70 +2,79 @@ import 'dart:convert';
 
 class Inventory {
   final String id;
-  final String boxNumber;
+  // ignore: non_constant_identifier_names
+  final String box_number;
   final List<String> contents;
-  final String? imagePath;
+  // ignore: non_constant_identifier_names
+  final String? image_path;
   final String size;
   final String? position;
   final String? environment;
-  final DateTime lastUpdated;
+  // ignore: non_constant_identifier_names
+  final DateTime last_updated;
 
   Inventory({
     required this.id,
-    required this.boxNumber,
+    // ignore: non_constant_identifier_names
+    required this.box_number,
     required this.contents,
-    this.imagePath,
+    // ignore: non_constant_identifier_names
+    this.image_path,
     required this.size,
     this.position,
     this.environment,
-    required this.lastUpdated,
+    // ignore: non_constant_identifier_names
+    required this.last_updated,
   });
 
   factory Inventory.fromMap(Map<String, dynamic> map) {
     return Inventory(
       id: map['id'],
-      boxNumber: map['boxNumber'],
+      box_number: map['box_number'],
       contents: List<String>.from(jsonDecode(map['contents'])),
-      imagePath: map['imagePath'],
+      image_path: map['image_path'],
       size: map['size'],
       position: map['position'],
       environment: map['environment'],
-      lastUpdated: DateTime.parse(map['lastUpdated']),
+      last_updated: DateTime.parse(map['lastUpdated']),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'boxNumber': boxNumber,
+      'box_number': box_number,
       'contents': jsonEncode(contents),
-      'imagePath': imagePath,
+      'image_path': image_path,
       'size': size,
       'position': position,
       'environment': environment,
-      'lastUpdated': lastUpdated.toIso8601String(),
+      'lastUpdated': last_updated.toIso8601String(),
     };
   }
 
   Inventory copyWith({
     String? id,
-    String? boxNumber,
+    // ignore: non_constant_identifier_names
+    String? box_number,
     List<String>? contents,
-    String? imagePath,
+    // ignore: non_constant_identifier_names
+    String? image_path,
     String? size,
     String? position,
     String? environment,
-    DateTime? lastUpdated,
+    // ignore: non_constant_identifier_names
+    DateTime? last_updated,
   }) {
     return Inventory(
       id: id ?? this.id,
-      boxNumber: boxNumber ?? this.boxNumber,
+      box_number: box_number ?? this.box_number,
       contents: contents ?? this.contents,
-      imagePath: imagePath ?? this.imagePath,
+      image_path: image_path ?? this.image_path,
       size: size ?? this.size,
       position: position ?? this.position,
       environment: environment ?? this.environment,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
+      last_updated: last_updated ?? this.last_updated,
     );
   }
 }

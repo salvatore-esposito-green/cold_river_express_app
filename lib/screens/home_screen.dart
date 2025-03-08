@@ -31,9 +31,12 @@ class HomeScreenState extends State<HomeScreen> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.qr_code_scanner),
+            icon: Icon(Icons.search, size: 36),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.qr_code_scanner, size: 36),
             label: 'Scan',
           ),
         ],

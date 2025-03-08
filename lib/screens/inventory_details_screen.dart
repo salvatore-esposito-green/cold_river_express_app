@@ -31,7 +31,7 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Box N. ${_currentInventory.boxNumber}'),
+        title: Text('Box N. ${_currentInventory.box_number}'),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
@@ -76,12 +76,12 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  _currentInventory.imagePath != null &&
-                          _currentInventory.imagePath!.isNotEmpty
+                  _currentInventory.image_path != null &&
+                          _currentInventory.image_path!.isNotEmpty
                       ? Hero(
                         tag: _currentInventory.id,
                         child: Image.file(
-                          File(_currentInventory.imagePath!),
+                          File(_currentInventory.image_path!),
                           fit: BoxFit.cover,
                         ),
                       )
@@ -129,7 +129,7 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                                   ? () {
                                     printerService.print(
                                       _currentInventory.id,
-                                      _currentInventory.boxNumber,
+                                      _currentInventory.box_number,
                                       _currentInventory.contents.join(', '),
                                     );
                                   }
@@ -227,7 +227,7 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                       children: [
                         Text("Last Updated:"),
                         Text(
-                          formatDate(_currentInventory.lastUpdated),
+                          formatDate(_currentInventory.last_updated),
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],

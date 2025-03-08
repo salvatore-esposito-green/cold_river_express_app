@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/services/image_picking_service.dart';
+import 'package:cold_river_express_app/widgets/autocomplete_field.dart';
 import 'package:cold_river_express_app/widgets/speech_to_text_field.dart';
 import 'package:flutter/material.dart';
 
@@ -25,6 +26,8 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
   String? _imagePath;
 
   final List<String> _boxSides = ['60x40x40', '80x40x40', 'Custom'];
+  List<String> _positionSuggestions = [];
+  List<String> _environmentSuggestions = [];
 
   final InventoryRepository _repository = InventoryRepository();
   final ImagePickingService _pickerService = ImagePickingService();
@@ -32,6 +35,9 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
   @override
   void initState() {
     super.initState();
+
+    _loadPositionSuggestions();
+    _loadEnvironmentSuggestions();
 
     _contentsController = TextEditingController(
       text: widget.inventory.contents.join(', '),
@@ -43,7 +49,23 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
       text: widget.inventory.environment,
     );
     _selectedSide = widget.inventory.size;
-    _imagePath = widget.inventory.imagePath;
+    _imagePath = widget.inventory.image_path;
+  }
+
+  Future<void> _loadPositionSuggestions() async {
+    final positions = await _repository.getLabelForPosition();
+
+    setState(() {
+      _positionSuggestions = positions;
+    });
+  }
+
+  Future<void> _loadEnvironmentSuggestions() async {
+    final environments = await _repository.getLabelForEnvironment();
+
+    setState(() {
+      _environmentSuggestions = environments;
+    });
   }
 
   @override
@@ -62,8 +84,8 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
         position: _positionController.text,
         environment: _environmentController.text,
         size: _selectedSide,
-        imagePath: _imagePath,
-        lastUpdated: DateTime.now(),
+        image_path: _imagePath,
+        last_updated: DateTime.now(),
       );
 
       await _repository.updateInventory(updatedInventory);
@@ -76,7 +98,7 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Modify Box N. ${widget.inventory.boxNumber}'),
+        title: Text('Modify Box N. ${widget.inventory.box_number}'),
         centerTitle: true,
       ),
       body: CustomScrollView(
@@ -150,18 +172,16 @@ class InventoryEditScreenState extends State<InventoryEditScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
+                      AutocompleteFormField(
                         controller: _positionController,
-                        decoration: const InputDecoration(
-                          labelText: 'Position',
-                        ),
+                        labelText: 'Position',
+                        suggestions: _positionSuggestions,
                       ),
-                      const SizedBox(height: 16),
-                      TextFormField(
+                      SizedBox(height: 16),
+                      AutocompleteFormField(
                         controller: _environmentController,
-                        decoration: const InputDecoration(
-                          labelText: 'Environment',
-                        ),
+                        labelText: 'Environment',
+                        suggestions: _environmentSuggestions,
                       ),
                       const SizedBox(height: 32),
                       ElevatedButton(

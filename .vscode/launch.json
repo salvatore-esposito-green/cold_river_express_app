@@ -8,7 +8,9 @@
         {
             "name": "cold_river_express_app",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/main.dart",
         },
         {
             "name": "cold_river_express_app (profile mode)",

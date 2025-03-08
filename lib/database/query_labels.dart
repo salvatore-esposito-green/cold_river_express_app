@@ -1,12 +1,14 @@
 class QueryLabels {
   static const String createInventoryTable = '''
     CREATE TABLE inventory (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      environment TEXT NOT NULL,
-      position TEXT NOT NULL,
-      name TEXT NOT NULL,
-      description TEXT,
-      quantity INTEGER NOT NULL
+      id TEXT PRIMARY KEY,
+      box_number TEXT NOT NULL,
+      contents TEXT NOT NULL,
+      image_path TEXT,
+      size TEXT NOT NULL,
+      position TEXT,
+      environment TEXT,
+      last_updated TEXT NOT NULL
     )
   ''';
 
