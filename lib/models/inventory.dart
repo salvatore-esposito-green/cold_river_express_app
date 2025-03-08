@@ -36,7 +36,7 @@ class Inventory {
       size: map['size'],
       position: map['position'],
       environment: map['environment'],
-      last_updated: DateTime.parse(map['lastUpdated']),
+      last_updated: DateTime.parse(map['last_updated']),
     );
   }
 
@@ -49,7 +49,7 @@ class Inventory {
       'size': size,
       'position': position,
       'environment': environment,
-      'lastUpdated': last_updated.toIso8601String(),
+      'last_updated': last_updated.toIso8601String(),
     };
   }
 
