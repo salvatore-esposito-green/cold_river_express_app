@@ -1,3 +1,4 @@
+import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/services/file_service.dart';
 
@@ -12,7 +13,7 @@ class SettingsScreen extends StatelessWidget {
     if (sharedRes) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Database condiviso con successo!'),
+          content: Text('Database shared successfully!'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -21,7 +22,7 @@ class SettingsScreen extends StatelessWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Errore durante la condivisione del database.'),
+        content: Text('Error sharing the database.'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -60,14 +61,14 @@ class SettingsScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Image.asset(
-                'assets/icons/icon-appbar.png',
+                AppConfig.logoPath,
                 fit: BoxFit.contain,
                 height: 25,
                 width: 25,
               ),
             ),
             SizedBox(width: 2),
-            Text('2025 Cold River Express'),
+            Text('${DateTime.now().year} ${AppConfig.appName}'),
           ],
         ),
       ),

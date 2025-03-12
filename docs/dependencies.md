@@ -4,6 +4,7 @@
 - [Installation](installation.md)
 - [Usage Guide](usage.md)
 - [Contributing](contributing.md)
+- [Customization](customization.md)
 
 # Dependencies
 

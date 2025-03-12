@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:cold_river_express_app/main.dart' show routeObserver;
 import 'package:cold_river_express_app/widgets/new_position_field.dart';
 import 'package:cold_river_express_app/widgets/search_field.dart';
@@ -260,13 +261,10 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
-          child: Image.asset(
-            'assets/icons/icon-appbar.png',
-            fit: BoxFit.contain,
-          ),
+          child: Image.asset(AppConfig.logoPath, fit: BoxFit.contain),
         ),
         title: Text(
-          'Cold River Express',
+          AppConfig.appName,
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         centerTitle: true,

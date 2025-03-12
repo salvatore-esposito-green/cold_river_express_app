@@ -1,3 +1,4 @@
+import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:cold_river_express_app/providers/printer_provider.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/routes/route_generator.dart';
@@ -13,7 +14,7 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('it_IT', null);
+  await initializeDateFormatting(AppConfig.dateLocal, null);
   await BluetoothService.requestBluetoothPermissions();
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
@@ -41,17 +42,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final brightness = View.of(context).platformDispatcher.platformBrightness;
     TextTheme textTheme = createTextTheme(context, "Cousine", "Cousine");
-    MaterialTheme theme = MaterialTheme(textTheme);
+    MaterialTheme theme = MaterialTheme(
+      textTheme: textTheme,
+      primarySeed: AppConfig.primaryColor,
+    );
 
     return MaterialApp(
       navigatorObservers: [routeObserver],
-      title: 'Cold River Express',
+      title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       onGenerateRoute: RouteGenerator.generateRoute,
-      theme:
-          brightness == Brightness.light
-              ? theme.darkHighContrast()
-              : theme.lightHighContrast(),
+      theme: brightness == Brightness.light ? theme.light() : theme.dark(),
     );
   }
 }

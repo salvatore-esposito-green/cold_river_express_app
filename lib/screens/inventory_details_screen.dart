@@ -44,21 +44,21 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                       : Theme.of(context).colorScheme.errorContainer,
             ),
             onSelected: (value) async {
-              if (value == 'trova') {
+              if (value == 'find') {
                 await printerService.scanBluetoothDevices();
                 _showDeviceSelection(context, printerService);
-              } else if (value == 'disconnetti') {
+              } else if (value == 'disconnect') {
                 await printerService.disconnect();
               }
             },
             itemBuilder:
                 (BuildContext context) => <PopupMenuEntry<String>>[
                   const PopupMenuItem<String>(
-                    value: 'trova',
+                    value: 'find',
                     child: Text('Find Printer'),
                   ),
                   PopupMenuItem<String>(
-                    value: 'disconnetti',
+                    value: 'disconnect',
                     enabled: printerService.isConnected,
                     child: Text('Disconnect'),
                   ),

@@ -10,3 +10,4 @@ The Flutter Inventory Management App is a mobile application designed to help us
 - [Installation](installation.md)
 - [Usage Guide](usage.md)
 - [Contributing](contributing.md)
+- [Customization](customization.md)
