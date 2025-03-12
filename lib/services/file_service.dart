@@ -39,7 +39,9 @@ class FileService {
       final result = await Share.shareXFiles([XFile(copiedFilePath)]);
 
       if (result.status == ShareResultStatus.dismissed) {
-        print('Did you not like the pictures?');
+        if (kDebugMode) {
+          print('Did you not like the pictures?');
+        }
       }
 
       return result.status == ShareResultStatus.success;

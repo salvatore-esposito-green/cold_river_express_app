@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:cold_river_express_app/providers/printer_provider.dart';
-import 'package:cold_river_express_app/utils/formatDate.dart';
+import 'package:cold_river_express_app/utils/format_date.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:provider/provider.dart';
