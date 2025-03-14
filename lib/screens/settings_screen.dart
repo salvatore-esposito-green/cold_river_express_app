@@ -4,7 +4,6 @@ import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/services/file_service.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -70,53 +69,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         content: Text('Logo removed successfully!'),
         duration: Duration(seconds: 2),
       ),
-    );
-  }
-
-  Future<void> _pickPrimaryColor() async {
-    Color selectedColor = AppConfig.primaryColor;
-
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select Primary Color'),
-          content: SingleChildScrollView(
-            child: ColorPicker(
-              pickerColor: selectedColor,
-              onColorChanged: (Color color) {
-                selectedColor = color;
-              },
-              pickerAreaHeightPercent: 0.8,
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Select'),
-              onPressed: () {
-                setState(() {
-                  AppConfig.updateTheme(selectedColor);
-                });
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Primary color changed successfully!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -190,25 +142,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 IconButton(icon: Icon(Icons.delete), onPressed: _deleteLogo),
               ],
             ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.color_lens),
-              title: const Text('Change Primary Color'),
-              subtitle: const Text('Select a new primary color for the app.'),
-              onTap: _pickPrimaryColor,
-            ),
-            const Divider(),
-            SwitchListTile(
-              title: const Text('Dark Mode'),
-              value: AppConfig.isDarkMode,
-              onChanged: (bool value) {
-                setState(() {
-                  AppConfig.toggleDarkMode(value);
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
           ],
         ),
       ),

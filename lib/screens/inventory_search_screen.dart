@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cold_river_express_app/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cold_river_express_app/config/app_config.dart';
@@ -171,13 +172,26 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
       child: Consumer<InventorySearchController>(
         builder: (context, controller, child) {
           return Scaffold(
+            drawer: const AppDrawer(),
             appBar: AppBar(
-              leading: Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child:
-                    AppConfig.logoPath.isNotEmpty
-                        ? Image.asset(AppConfig.logoPath, fit: BoxFit.contain)
-                        : const Icon(Icons.home),
+              leading: Builder(
+                builder: (context) {
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: InkWell(
+                      onTap: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                      child:
+                          AppConfig.logoPath.isNotEmpty
+                              ? Image.asset(
+                                AppConfig.logoPath,
+                                fit: BoxFit.contain,
+                              )
+                              : const Icon(Icons.home),
+                    ),
+                  );
+                },
               ),
               title: Text(
                 AppConfig.appName,
