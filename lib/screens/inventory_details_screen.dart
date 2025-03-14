@@ -41,7 +41,7 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
               color:
                   printerService.isConnected
                       ? Theme.of(context).iconTheme.color
-                      : Theme.of(context).colorScheme.errorContainer,
+                      : Theme.of(context).colorScheme.error,
             ),
             onSelected: (value) async {
               if (value == 'find') {

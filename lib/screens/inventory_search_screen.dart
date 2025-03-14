@@ -1,12 +1,12 @@
 import 'dart:io';
-
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:cold_river_express_app/config/app_config.dart';
-import 'package:cold_river_express_app/main.dart' show routeObserver;
+import 'package:cold_river_express_app/controllers/inventory_search_controller.dart';
+import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/widgets/new_position_field.dart';
 import 'package:cold_river_express_app/widgets/search_field.dart';
-import 'package:flutter/material.dart';
-import 'package:cold_river_express_app/models/inventory.dart';
-import 'package:cold_river_express_app/repositories/inventory_repository.dart';
+import 'package:cold_river_express_app/main.dart' show routeObserver;
 
 class InventorySearchScreen extends StatefulWidget {
   const InventorySearchScreen({super.key});
@@ -17,166 +17,72 @@ class InventorySearchScreen extends StatefulWidget {
 
 class InventorySearchScreenState extends State<InventorySearchScreen>
     with RouteAware {
-  final InventoryRepository _repository = InventoryRepository();
+  late final InventorySearchController _controller;
   final TextEditingController _searchController = TextEditingController();
-
-  List<Inventory> _inventories = [];
-  final List<String> _selectedInventory = [];
-
-  bool _isLoading = false;
-
-  String? _selectedEnvironment;
-  String? _selectedPosition;
 
   @override
   void initState() {
     super.initState();
-    _loadInventories();
-    _searchController.addListener(_onSearchChanged);
+    _controller = InventorySearchController();
+    _controller.loadInventories();
+    _searchController.addListener(() {
+      _controller.onSearchChanged(_searchController.text);
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     final route = ModalRoute.of(context);
-
     if (route is PageRoute) {
-      routeObserver.subscribe(this as RouteAware, route);
+      routeObserver.subscribe(this, route);
     }
   }
 
   @override
   void didPopNext() {
-    _loadInventories();
-  }
-
-  Future<void> _loadInventories() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    List<Inventory> items;
-
-    if (_searchController.text.trim().isEmpty) {
-      items = await _repository.fetchAllInventories();
-    } else {
-      items = await _repository.freeSearchInventory(
-        _searchController.text.trim(),
-      );
-    }
-
-    if (_selectedEnvironment != null || _selectedPosition != null) {
-      items =
-          items.where((inventory) {
-            final matchesEnvironment =
-                _selectedEnvironment == null ||
-                inventory.environment == _selectedEnvironment;
-            final matchesPosition =
-                _selectedPosition == null ||
-                inventory.position == _selectedPosition;
-            return matchesEnvironment && matchesPosition;
-          }).toList();
-    }
-
-    setState(() {
-      _inventories = items;
-      _isLoading = false;
-      _selectedInventory.clear();
-    });
-  }
-
-  void _onSearchChanged() {
-    _loadInventories();
-  }
-
-  Future<void> _onChangeInventoriesPositions(String newPositions) async {
-    FocusScope.of(context).unfocus();
-
-    await _repository.updateInventoriesPosition(
-      _selectedInventory,
-      newPositions,
-    );
-
-    setState(() {
-      _selectedInventory.clear();
-    });
-
-    await _loadInventories();
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Positions updated successfully')));
-  }
-
-  void _onSelectInventory(String inventoryId) {
-    setState(() {
-      if (_selectedInventory.contains(inventoryId)) {
-        _selectedInventory.remove(inventoryId);
-      } else {
-        _selectedInventory.add(inventoryId);
-      }
-    });
-  }
-
-  Future<void> _onChangeFilter(String? environment, String? position) async {
-    setState(() {
-      _selectedEnvironment = environment;
-      _selectedPosition = position;
-    });
-    await _loadInventories();
-  }
-
-  void _onClearFilter() {
-    setState(() {
-      _selectedEnvironment = null;
-      _selectedPosition = null;
-    });
-    _searchController.clear();
-    _loadInventories();
+    _controller.loadInventories();
   }
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
+    _searchController.removeListener(() {});
     _searchController.dispose();
-    routeObserver.unsubscribe(this as RouteAware);
-
+    routeObserver.unsubscribe(this);
+    _controller.dispose();
     super.dispose();
   }
 
   Widget _buildInventoryItem(Inventory inventory) {
-    final bool isSelected = _selectedInventory.contains(inventory.id);
+    final bool isSelected = _controller.selectedInventoryIds.contains(
+      inventory.id,
+    );
 
     return Dismissible(
-      key: Key(inventory.id.toString()),
+      key: Key(inventory.id),
       background: Container(
-        color: Theme.of(context).colorScheme.errorContainer,
+        color: Theme.of(context).colorScheme.error,
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Icon(Icons.delete, color: Colors.white),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(Icons.delete, color: Colors.white),
       ),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
-        _repository.deleteInventoryById(inventory.id);
-        _loadInventories();
+        _controller.deleteInventory(inventory.id);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Item deleted")));
+        ).showSnackBar(const SnackBar(content: Text("Item deleted")));
       },
       child: Container(
         color:
             isSelected
                 ? Theme.of(
                   context,
-                ).colorScheme.primaryContainer.withValues(alpha: .3)
+                ).colorScheme.primaryContainer.withOpacity(0.3)
                 : null,
-
         child: ListTile(
           leading: InkWell(
-            onTap: () {
-              _onSelectInventory(inventory.id);
-            },
+            onTap: () => _controller.toggleSelectInventory(inventory.id),
             child:
                 isSelected
                     ? CircleAvatar(
@@ -197,9 +103,9 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                     )
                     : Hero(
                       tag: inventory.id,
-                      child: CircleAvatar(
+                      child: const CircleAvatar(
                         radius: 24,
-                        child: const Icon(Icons.inbox),
+                        child: Icon(Icons.inbox),
                       ),
                     ),
           ),
@@ -211,16 +117,19 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                 inventory.contents.join(', '),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12),
+                style: const TextStyle(fontSize: 12),
               ),
               if (inventory.position?.isNotEmpty ?? false)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Row(
                     children: [
-                      Icon(Icons.pin_drop, size: 12),
-                      SizedBox(width: 4),
-                      Text(inventory.position!, style: TextStyle(fontSize: 10)),
+                      const Icon(Icons.pin_drop, size: 12),
+                      const SizedBox(width: 4),
+                      Text(
+                        inventory.position!,
+                        style: const TextStyle(fontSize: 10),
+                      ),
                     ],
                   ),
                 ),
@@ -230,11 +139,11 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
               inventory.environment?.isNotEmpty == true
                   ? Chip(
                     materialTapTargetSize: MaterialTapTargetSize.padded,
-                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    labelPadding: EdgeInsets.symmetric(horizontal: 4),
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                     visualDensity: VisualDensity.compact,
                     label: Text(
                       inventory.environment!,
@@ -257,63 +166,85 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Image.asset(AppConfig.logoPath, fit: BoxFit.contain),
-        ),
-        title: Text(
-          AppConfig.appName,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              icon: Icon(Icons.settings),
-              onPressed: () {
-                FocusScope.of(context).unfocus();
-                Navigator.pushNamed(context, '/settings');
-              },
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          _selectedInventory.isNotEmpty
-              ? NewPositionField(
-                onPositionChanged: (String value) {
-                  _onChangeInventoriesPositions(value);
-                },
-              )
-              : SearchField(
-                searchController: _searchController,
-                loadInventories: () {
-                  _loadInventories();
-                },
-                onChangeFilter: (env, pos) => _onChangeFilter(env, pos),
-                onClearFilter: _onClearFilter,
-                selectedEnvironment: _selectedEnvironment,
-                selectedPosition: _selectedPosition,
+    return ChangeNotifierProvider<InventorySearchController>.value(
+      value: _controller,
+      child: Consumer<InventorySearchController>(
+        builder: (context, controller, child) {
+          return Scaffold(
+            appBar: AppBar(
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child:
+                    AppConfig.logoPath.isNotEmpty
+                        ? Image.asset(AppConfig.logoPath, fit: BoxFit.contain)
+                        : const Icon(Icons.home),
               ),
-          Expanded(
-            child:
-                _isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    : _inventories.isEmpty
-                    ? Center(child: Text('No inventory items found.'))
-                    : ListView.builder(
-                      itemCount: _inventories.length,
-                      itemBuilder: (context, index) {
-                        return _buildInventoryItem(_inventories[index]);
+              title: Text(
+                AppConfig.appName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              centerTitle: true,
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () {
+                      FocusScope.of(context).unfocus();
+                      Navigator.pushNamed(context, '/settings');
+                    },
+                  ),
+                ),
+              ],
+            ),
+            body: Column(
+              children: [
+                controller.selectedInventoryIds.isNotEmpty
+                    ? NewPositionField(
+                      onPositionChanged: (String value) async {
+                        await controller.updateInventoriesPositions(value);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Positions updated successfully'),
+                          ),
+                        );
                       },
+                    )
+                    : SearchField(
+                      searchController: _searchController,
+                      loadInventories: controller.loadInventories,
+                      onChangeFilter:
+                          (env, pos) async =>
+                              await controller.changeFilter(env, pos),
+                      onClearFilter: controller.clearFilter,
+                      selectedEnvironment: controller.selectedEnvironment,
+                      selectedPosition: controller.selectedPosition,
                     ),
-          ),
-        ],
+                Expanded(
+                  child:
+                      controller.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : controller.inventories.isEmpty
+                          ? const Center(
+                            child: Text('No inventory items found.'),
+                          )
+                          : ListView.builder(
+                            itemCount: controller.inventories.length,
+                            itemBuilder: (context, index) {
+                              return _buildInventoryItem(
+                                controller.inventories[index],
+                              );
+                            },
+                          ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

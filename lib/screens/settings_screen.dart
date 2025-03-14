@@ -60,6 +60,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _deleteLogo() async {
+    setState(() {
+      AppConfig.logoPath = '';
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Logo removed successfully!'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   Future<void> _pickPrimaryColor() async {
     Color selectedColor = AppConfig.primaryColor;
 
@@ -88,7 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: const Text('Select'),
               onPressed: () {
                 setState(() {
-                  AppConfig.primaryColor = selectedColor;
+                  AppConfig.updateTheme(selectedColor);
                 });
 
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -97,6 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     duration: Duration(seconds: 2),
                   ),
                 );
+
                 Navigator.of(context).pop();
               },
             ),
@@ -135,8 +149,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 16),
             const Text(
               'Customize',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -159,20 +171,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text('Logo:', style: Theme.of(context).textTheme.bodyLarge),
                 const SizedBox(width: 16),
-                Image.asset(
-                  AppConfig.logoPath,
-                  height: 50,
-                  width: 50,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.file(
-                      File(AppConfig.logoPath),
+                AppConfig.logoPath.isNotEmpty
+                    ? Image.asset(
+                      AppConfig.logoPath,
                       height: 50,
                       width: 50,
-                    );
-                  },
-                ),
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.file(
+                          File(AppConfig.logoPath),
+                          height: 50,
+                          width: 50,
+                        );
+                      },
+                    )
+                    : const Icon(Icons.image, size: 50),
                 const SizedBox(width: 16),
                 IconButton(icon: Icon(Icons.edit), onPressed: _pickNewLogo),
+                IconButton(icon: Icon(Icons.delete), onPressed: _deleteLogo),
               ],
             ),
             const SizedBox(height: 16),
@@ -182,6 +197,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: const Text('Select a new primary color for the app.'),
               onTap: _pickPrimaryColor,
             ),
+            const Divider(),
+            SwitchListTile(
+              title: const Text('Dark Mode'),
+              value: AppConfig.isDarkMode,
+              onChanged: (bool value) {
+                setState(() {
+                  AppConfig.toggleDarkMode(value);
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
           ],
         ),
       ),
@@ -190,15 +217,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Image.asset(
-                AppConfig.logoPath,
-                fit: BoxFit.contain,
-                height: 25,
-                width: 25,
+            if (AppConfig.logoPath.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset(
+                  AppConfig.logoPath,
+                  fit: BoxFit.contain,
+                  height: 25,
+                  width: 25,
+                ),
               ),
-            ),
             SizedBox(width: 2),
             Text('${DateTime.now().year} ${AppConfig.appName}'),
           ],
