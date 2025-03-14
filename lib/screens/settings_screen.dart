@@ -15,10 +15,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final FileService _fileService = FileService();
 
-  final TextEditingController _appNameController = TextEditingController(
-    text: AppConfig.appName,
-  );
-
   Future<void> shareDatabase(BuildContext context) async {
     final sharedRes = await _fileService.shareDatabase();
 
@@ -73,25 +69,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   @override
-  void dispose() {
-    _appNameController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Settings'), centerTitle: true),
+      appBar: AppBar(title: Text('Share'), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Options',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
             ListTile(
               leading: Icon(Icons.share),
               title: Text('Share Database'),
@@ -101,24 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Customize',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _appNameController,
-              decoration: const InputDecoration(
-                labelText: 'App Name',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  AppConfig.appName = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
+
             Row(
               children: [
                 Text('Logo:', style: Theme.of(context).textTheme.bodyLarge),

@@ -60,20 +60,7 @@ class AppDrawerState extends State<AppDrawer> {
               ),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.home),
-            title: const Text("Home"),
-            onTap: () {
-              Navigator.pushNamed(context, '/');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text("Settings"),
-            onTap: () {
-              Navigator.pushNamed(context, '/settings');
-            },
-          ),
+
           SwitchListTile(
             thumbIcon: WidgetStateProperty.all(
               Icon(AppConfig.isDarkMode ? Icons.dark_mode : Icons.light_mode),

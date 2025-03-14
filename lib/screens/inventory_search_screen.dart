@@ -206,7 +206,7 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: IconButton(
-                    icon: const Icon(Icons.settings),
+                    icon: const Icon(Icons.share),
                     onPressed: () {
                       FocusScope.of(context).unfocus();
                       Navigator.pushNamed(context, '/settings');
