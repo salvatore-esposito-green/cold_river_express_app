@@ -1,6 +1,7 @@
 import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:cold_river_express_app/services/bottom_sheet_service.dart';
-import 'package:cold_river_express_app/widgets/color_picker_modal.dart';
+import 'package:cold_river_express_app/widgets/modal/change_logo_modal.dart';
+import 'package:cold_river_express_app/widgets/modal/color_picker_modal.dart';
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -36,6 +37,15 @@ class AppDrawerState extends State<AppDrawer> {
         });
       },
       showConfirmButton: true,
+    );
+  }
+
+  Future<void> _changeLogo() async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ChangeLogoModal();
+      },
     );
   }
 
@@ -81,6 +91,7 @@ class AppDrawerState extends State<AppDrawer> {
             title: const Text('Primary Color'),
             onTap: _pickPrimaryColor,
           ),
+          ListTile(title: const Text('Logo'), onTap: _changeLogo),
         ],
       ),
     );

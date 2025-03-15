@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/services/file_service.dart';
-import 'package:image_picker/image_picker.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -36,38 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _pickNewLogo() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        AppConfig.logoPath = pickedFile.path;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Logo changed successfully!'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  Future<void> _deleteLogo() async {
-    setState(() {
-      AppConfig.logoPath = '';
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Logo removed successfully!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,30 +51,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Text('Logo:', style: Theme.of(context).textTheme.bodyLarge),
-                const SizedBox(width: 16),
-                AppConfig.logoPath.isNotEmpty
-                    ? Image.asset(
-                      AppConfig.logoPath,
-                      height: 50,
-                      width: 50,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.file(
-                          File(AppConfig.logoPath),
-                          height: 50,
-                          width: 50,
-                        );
-                      },
-                    )
-                    : const Icon(Icons.image, size: 50),
-                const SizedBox(width: 16),
-                IconButton(icon: Icon(Icons.edit), onPressed: _pickNewLogo),
-                IconButton(icon: Icon(Icons.delete), onPressed: _deleteLogo),
-              ],
-            ),
           ],
         ),
       ),

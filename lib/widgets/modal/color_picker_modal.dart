@@ -15,7 +15,12 @@ class _ColorPickerModalState extends State<ColorPickerModal> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Select Primary Color'),
+      title: const Text('Select Primary Color', textAlign: TextAlign.center),
+      titleTextStyle: TextStyle(
+        color: AppConfig.primaryColor,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
       content: SingleChildScrollView(
         child: ColorPicker(
           pickerColor: selectedColor,
