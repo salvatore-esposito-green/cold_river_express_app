@@ -39,7 +39,11 @@ class DBHelper {
 
     final String path = join(documentsDirectory.path, fileName);
 
-    return await openDatabase(path, version: 3, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: int.parse(version),
+      onCreate: _createDB,
+    );
   }
 
   Future _createDB(Database db, int version) async {
@@ -181,5 +185,46 @@ class DBHelper {
     );
 
     return result.map((row) => row.values.first.toString()).toList();
+  }
+
+  Future<void> close() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
+  }
+
+  Future<bool> replaceDatabase(String backupFilePath) async {
+    var response = false;
+
+    await close();
+
+    final Directory documentsDirectory =
+        await getApplicationDocumentsDirectory();
+
+    final String currentDbPath = join(
+      documentsDirectory.path,
+      'inventor_version_$version.db',
+    );
+
+    final File backupFile = File(backupFilePath);
+
+    final File currentDbFile = File(currentDbPath);
+
+    if (await backupFile.exists()) {
+      await backupFile.copy(currentDbPath);
+
+      if (kDebugMode) {
+        print('Database replaced successfully.');
+      }
+      response = true;
+    } else {
+      response = false;
+      throw Exception('Backup file not found at $backupFilePath');
+    }
+
+    await database;
+
+    return response;
   }
 }

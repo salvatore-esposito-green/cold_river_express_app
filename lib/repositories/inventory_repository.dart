@@ -53,4 +53,8 @@ class InventoryRepository {
   Future<List<String>> getLabelForPosition() async {
     return await dbHelper.getLabelForPosition();
   }
+
+  Future<bool> replaceInventory(String backupFilePath) async {
+    return await dbHelper.replaceDatabase(backupFilePath);
+  }
 }

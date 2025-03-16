@@ -2,14 +2,14 @@ import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/services/file_service.dart';
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+class ShareScreen extends StatefulWidget {
+  const ShareScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<ShareScreen> createState() => _ShareScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _ShareScreenState extends State<ShareScreen> {
   final FileService _fileService = FileService();
 
   Future<void> shareDatabase(BuildContext context) async {
@@ -51,6 +51,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             const SizedBox(height: 16),
+            ListTile(
+              leading: Icon(Icons.share),
+              title: Text('Share Delivery Note'),
+              subtitle: Text('Export and share your delivery notes.'),
+              onTap: () {
+                Navigator.pushNamed(context, '/share_delivery_note');
+              },
+            ),
           ],
         ),
       ),

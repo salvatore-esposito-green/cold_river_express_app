@@ -1,7 +1,9 @@
 import 'package:cold_river_express_app/config/app_config.dart';
+import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/services/bottom_sheet_service.dart';
 import 'package:cold_river_express_app/widgets/modal/change_logo_modal.dart';
 import 'package:cold_river_express_app/widgets/modal/color_picker_modal.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -12,6 +14,8 @@ class AppDrawer extends StatefulWidget {
 }
 
 class AppDrawerState extends State<AppDrawer> {
+  InventoryRepository inventoryRepository = InventoryRepository();
+
   Future<void> _pickPrimaryColor() async {
     await showDialog(
       context: context,
@@ -47,6 +51,41 @@ class AppDrawerState extends State<AppDrawer> {
         return ChangeLogoModal();
       },
     );
+  }
+
+  Future<void> importBackup() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.single.path != null) {
+      String backupFilePath = result.files.single.path!;
+      try {
+        await inventoryRepository.replaceInventory(backupFilePath);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Backup imported successfully!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error importing backup: $e'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No file selected for import.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -92,6 +131,7 @@ class AppDrawerState extends State<AppDrawer> {
             onTap: _pickPrimaryColor,
           ),
           ListTile(title: const Text('Logo'), onTap: _changeLogo),
+          ListTile(title: const Text('Backup'), onTap: importBackup),
         ],
       ),
     );

@@ -79,7 +79,7 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
             isSelected
                 ? Theme.of(
                   context,
-                ).colorScheme.primaryContainer.withOpacity(0.3)
+                ).colorScheme.primaryContainer.withAlpha((0.3 * 255).round())
                 : null,
         child: ListTile(
           leading: InkWell(
@@ -98,8 +98,19 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                     ? Hero(
                       tag: inventory.id,
                       child: CircleAvatar(
-                        backgroundImage: FileImage(File(inventory.image_path!)),
                         radius: 24,
+                        child:
+                            File(inventory.image_path!).existsSync()
+                                ? ClipOval(
+                                  child: Image.file(
+                                    File(inventory.image_path!),
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                                : const Icon(
+                                  Icons.image_not_supported,
+                                  size: 24,
+                                ),
                       ),
                     )
                     : Hero(
@@ -129,6 +140,11 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                       const SizedBox(width: 4),
                       Text(
                         inventory.position!,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '[${inventory.size}]',
                         style: const TextStyle(fontSize: 10),
                       ),
                     ],
@@ -209,7 +225,7 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                     icon: const Icon(Icons.share),
                     onPressed: () {
                       FocusScope.of(context).unfocus();
-                      Navigator.pushNamed(context, '/settings');
+                      Navigator.pushNamed(context, '/share');
                     },
                   ),
                 ),

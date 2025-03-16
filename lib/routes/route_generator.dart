@@ -1,11 +1,12 @@
 import 'package:cold_river_express_app/models/inventory.dart';
+import 'package:cold_river_express_app/screens/delivery_note_screen.dart';
 import 'package:cold_river_express_app/screens/home_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_details_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_edit_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_insert_screen.dart';
 import 'package:cold_river_express_app/screens/inventory_search_screen.dart';
 import 'package:cold_river_express_app/screens/qr_scan_screen.dart';
-import 'package:cold_river_express_app/screens/settings_screen.dart';
+import 'package:cold_river_express_app/screens/share_screen.dart';
 import 'package:flutter/material.dart';
 
 class RouteGenerator {
@@ -29,8 +30,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => InventorySearchScreen());
       case '/qr':
         return MaterialPageRoute(builder: (_) => QRScanScreen());
-      case '/settings':
-        return MaterialPageRoute(builder: (_) => SettingsScreen());
+      case '/share':
+        return MaterialPageRoute(builder: (_) => ShareScreen());
+      case '/share_delivery_note':
+        return MaterialPageRoute(builder: (_) => DeliveryNoteScreen());
       default:
         return _errorRoute(settings.name ?? 'unknown');
     }

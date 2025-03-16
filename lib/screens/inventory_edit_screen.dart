@@ -51,7 +51,18 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                   _imagePath != null && _imagePath!.isNotEmpty
                       ? Hero(
                         tag: widget.inventory.id,
-                        child: Image.file(File(_imagePath!), fit: BoxFit.cover),
+                        child: Builder(
+                          builder: (context) {
+                            final file = File(_imagePath!);
+                            if (file.existsSync()) {
+                              return Image.file(file, fit: BoxFit.cover);
+                            } else {
+                              return Container(
+                                color: Theme.of(context).colorScheme.primary,
+                              );
+                            }
+                          },
+                        ),
                       )
                       : Container(color: Theme.of(context).colorScheme.primary),
                   Center(

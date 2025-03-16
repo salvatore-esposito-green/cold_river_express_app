@@ -13,7 +13,7 @@ class BoxSize {
 
   double get volume => (length * width * height) / 1000000;
 
-  String get value => '${length}x${width}x${height}';
+  String get value => '${length}x${width}x$height';
 
   factory BoxSize.fromMap(Map<String, dynamic> map) {
     return BoxSize(
@@ -26,5 +26,17 @@ class BoxSize {
 
   Map<String, dynamic> toMap() {
     return {'length': length, 'width': width, 'height': height};
+  }
+
+  factory BoxSize.fromString(String value) {
+    final parts = value.split('x');
+    if (parts.length != 3) {
+      throw Exception('Invalid box size format');
+    }
+    return BoxSize(
+      length: int.parse(parts[0]),
+      width: int.parse(parts[1]),
+      height: int.parse(parts[2]),
+    );
   }
 }

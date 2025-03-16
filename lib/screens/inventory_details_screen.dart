@@ -78,12 +78,29 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                 children: [
                   _currentInventory.image_path != null &&
                           _currentInventory.image_path!.isNotEmpty
-                      ? Hero(
-                        tag: _currentInventory.id,
-                        child: Image.file(
-                          File(_currentInventory.image_path!),
-                          fit: BoxFit.cover,
-                        ),
+                      ? Builder(
+                        builder: (context) {
+                          final file = File(_currentInventory.image_path!);
+                          if (file.existsSync()) {
+                            return Hero(
+                              tag: _currentInventory.id,
+                              child: Image.file(file, fit: BoxFit.cover),
+                            );
+                          } else {
+                            return Container(
+                              color: Theme.of(context).colorScheme.primary,
+                              child: Center(
+                                child: Text(
+                                  "No image available",
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                        },
                       )
                       : Container(
                         color: Theme.of(context).colorScheme.primary,

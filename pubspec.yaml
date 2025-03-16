@@ -30,6 +30,9 @@ dependencies:
   share_plus: ^10.1.4
   permission_handler: ^11.4.0
   flutter_colorpicker: ^1.1.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  file_picker: ^9.1.0
 
 dev_dependencies:
   flutter_test:
