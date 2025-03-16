@@ -1,6 +1,7 @@
 import 'package:cold_river_express_app/controllers/suggestion_controller.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/widgets/autocomplete_field.dart';
+import 'package:cold_river_express_app/widgets/box_sizes_select.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/widgets/speech_to_text_field.dart';
@@ -12,15 +13,12 @@ class InventoryFormWidget extends StatefulWidget {
 
   final OnSubmitCallback onSubmit;
 
-  final List<String> boxSides;
-
   final String? imagePath;
 
   const InventoryFormWidget({
     super.key,
     this.initialInventory,
     required this.onSubmit,
-    this.boxSides = const ['60x40x40', '80x40x40', 'Custom'],
     this.imagePath,
   });
 
@@ -41,7 +39,7 @@ class InventoryFormWidgetState extends State<InventoryFormWidget> {
     suggestions: [],
   );
 
-  late String _selectedSide;
+  late String _selectedSize;
 
   final InventoryRepository _repository = InventoryRepository();
 
@@ -57,7 +55,7 @@ class InventoryFormWidgetState extends State<InventoryFormWidget> {
     _environmentController = TextEditingController(
       text: widget.initialInventory?.environment ?? '',
     );
-    _selectedSide = widget.initialInventory?.size ?? widget.boxSides.first;
+    _selectedSize = widget.initialInventory?.size ?? '';
 
     _loadPositionSuggestions();
     _loadEnvironmentSuggestions();
@@ -80,7 +78,7 @@ class InventoryFormWidgetState extends State<InventoryFormWidget> {
             _contentsController.text.split(',').map((s) => s.trim()).toList(),
         position: _positionController.text,
         environment: _environmentController.text,
-        size: _selectedSide,
+        size: _selectedSize,
         image_path: widget.imagePath,
         last_updated: DateTime.now(),
       );
@@ -113,22 +111,9 @@ class InventoryFormWidgetState extends State<InventoryFormWidget> {
           const SizedBox(height: 16),
           SpeechToTextField(controller: _contentsController),
           const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            value: _selectedSide,
-            decoration: const InputDecoration(labelText: 'Box Side'),
-            items:
-                widget.boxSides
-                    .map(
-                      (side) =>
-                          DropdownMenuItem(value: side, child: Text(side)),
-                    )
-                    .toList(),
-            onChanged: (value) => setState(() => _selectedSide = value ?? ''),
-            validator:
-                (value) =>
-                    value == null || value.isEmpty
-                        ? 'Please select a box side'
-                        : null,
+          BoxSizesSelect(
+            initialValue: _selectedSize,
+            onChanged: (value) => setState(() => _selectedSize = value),
           ),
           const SizedBox(height: 16),
           AutocompleteFormField(

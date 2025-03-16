@@ -7,7 +7,7 @@ import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
-final String version = "5";
+final String version = "6";
 
 class DBHelper {
   static final DBHelper _instance = DBHelper._internal();
@@ -44,6 +44,13 @@ class DBHelper {
 
   Future _createDB(Database db, int version) async {
     await db.execute(QueryLabels.createInventoryTable);
+
+    await db.execute(QueryLabels.createBoxSizesTable);
+
+    await db.insert('box_sizes', {'length': 60, 'width': 40, 'height': 40});
+    await db.insert('box_sizes', {'length': 60, 'width': 40, 'height': 35});
+    await db.insert('box_sizes', {'length': 60, 'width': 30, 'height': 30});
+    await db.insert('box_sizes', {'length': 80, 'width': 40, 'height': 40});
   }
 
   Future<int> insertInventory(Inventory inventory) async {
