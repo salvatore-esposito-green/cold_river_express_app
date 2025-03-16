@@ -35,15 +35,41 @@ class DeliveryNoteScreen extends StatelessWidget {
         BoxSummary(count: count, boxSize: box.value, volume: totalGroupVolume),
       );
     });
+
     return summaries;
   }
 
+  Future<Map<String, List<BoxSummary>>>
+  _generateGroupedByEnvironmentInventories(List<Inventory> inventories) async {
+    final Map<String, List<Inventory>> inventoriesByEnvironment = {};
+
+    for (var inventory in inventories) {
+      final env = inventory.environment ?? 'default';
+
+      inventoriesByEnvironment.putIfAbsent(env, () => []).add(inventory);
+    }
+
+    final Map<String, List<BoxSummary>> summariesByEnvironment = {};
+
+    inventoriesByEnvironment.forEach((environment, invList) {
+      summariesByEnvironment[environment] = _generateSummaries(invList);
+    });
+
+    return summariesByEnvironment;
+  }
+
   Future<void> _shareDeliveryNote(BuildContext context) async {
-    final summaries = _generateSummaries(
-      await _inventoryRepository.fetchAllInventories(),
+    final inventories = await _inventoryRepository.fetchAllInventories();
+
+    final summaries = _generateSummaries(inventories);
+    final groupedByEnvironment = await _generateGroupedByEnvironmentInventories(
+      inventories,
     );
 
-    final pdf = await _pdfService.shareDeliveryNotePdf(summaries);
+    final pdf = await _pdfService.shareDeliveryNotePdf(
+      summaries,
+      groupedByEnvironment,
+    );
 
     if (pdf == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,11 +90,17 @@ class DeliveryNoteScreen extends StatelessWidget {
   }
 
   Future<void> _printDeliveryNote(BuildContext context) async {
-    final summaries = _generateSummaries(
-      await _inventoryRepository.fetchAllInventories(),
+    final inventories = await _inventoryRepository.fetchAllInventories();
+
+    final summaries = _generateSummaries(inventories);
+    final groupedByEnvironment = await _generateGroupedByEnvironmentInventories(
+      inventories,
     );
 
-    final pdf = await _pdfService.previewDeliveryNotePdf(summaries);
+    final pdf = await _pdfService.previewDeliveryNotePdf(
+      summaries,
+      groupedByEnvironment,
+    );
 
     if (pdf == null) {
       ScaffoldMessenger.of(context).showSnackBar(
