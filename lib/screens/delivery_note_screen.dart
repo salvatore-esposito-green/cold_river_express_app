@@ -113,35 +113,76 @@ class DeliveryNoteScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(title: const Text('Delivery Note'), centerTitle: true),
-          body: Padding(
+          body: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 DataTable(
+                  columnSpacing: 0,
                   columns: const [
                     DataColumn(
-                      label: Text('Number'),
+                      label: Text(
+                        'Number',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       columnWidth: FlexColumnWidth(1),
+                      headingRowAlignment: MainAxisAlignment.center,
                     ),
                     DataColumn(
-                      label: Text('Box Size'),
+                      label: Text(
+                        'Box Size',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       columnWidth: FlexColumnWidth(1),
+                      headingRowAlignment: MainAxisAlignment.center,
                     ),
                     DataColumn(
-                      label: Text('Volume'),
+                      label: Text(
+                        'Volume',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       columnWidth: FlexColumnWidth(1),
+                      headingRowAlignment: MainAxisAlignment.center,
                     ),
                   ],
                   rows:
                       summaries.map((summary) {
                         return DataRow(
                           cells: [
-                            DataCell(Text('N. ${summary.count}')),
-                            DataCell(Text(summary.boxSize)),
                             DataCell(
-                              Text('${summary.volume.toStringAsFixed(3)} m³'),
+                              Container(
+                                width: double.infinity,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'N. ${summary.count}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Container(
+                                width: double.infinity,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  summary.boxSize,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Container(
+                                width: double.infinity,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  summary.volume.toStringAsFixed(3),
+                                  style: const TextStyle(fontSize: 12),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
                             ),
                           ],
                         );
