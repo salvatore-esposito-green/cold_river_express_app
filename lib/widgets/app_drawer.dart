@@ -1,4 +1,5 @@
 import 'package:cold_river_express_app/config/app_config.dart';
+import 'package:cold_river_express_app/database/migrate_images_from_caches.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/services/bottom_sheet_service.dart';
 import 'package:cold_river_express_app/widgets/modal/change_logo_modal.dart';
@@ -132,6 +133,10 @@ class AppDrawerState extends State<AppDrawer> {
           ),
           ListTile(title: const Text('Logo'), onTap: _changeLogo),
           ListTile(title: const Text('Backup'), onTap: importBackup),
+          ListTile(
+            title: const Text('Migrate Images From Caches'),
+            onTap: () => migrateCacheImagesAndUpdateDB(),
+          ),
         ],
       ),
     );

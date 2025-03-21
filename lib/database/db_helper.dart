@@ -227,4 +227,15 @@ class DBHelper {
 
     return response;
   }
+
+  Future<void> updateImagePath(String oldPath, String newPath) async {
+    final db = await database;
+
+    await db.update(
+      'inventory',
+      {'image_path': newPath},
+      where: 'image_path = ?',
+      whereArgs: [oldPath],
+    );
+  }
 }

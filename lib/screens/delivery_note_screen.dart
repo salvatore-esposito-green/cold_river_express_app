@@ -1,5 +1,6 @@
 import 'package:cold_river_express_app/models/box_size.dart';
 import 'package:cold_river_express_app/models/box_summary.dart';
+import 'package:cold_river_express_app/models/environment_group.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/services/pdf_service.dart';
@@ -39,23 +40,31 @@ class DeliveryNoteScreen extends StatelessWidget {
     return summaries;
   }
 
-  Future<Map<String, List<BoxSummary>>>
-  _generateGroupedByEnvironmentInventories(List<Inventory> inventories) async {
+  Future<List<EnvironmentGroup>> _generateGroupedByEnvironmentInventories(
+    List<Inventory> inventories,
+  ) async {
     final Map<String, List<Inventory>> inventoriesByEnvironment = {};
 
     for (var inventory in inventories) {
       final env = inventory.environment ?? 'default';
-
       inventoriesByEnvironment.putIfAbsent(env, () => []).add(inventory);
     }
 
-    final Map<String, List<BoxSummary>> summariesByEnvironment = {};
+    final List<EnvironmentGroup> groups = [];
 
     inventoriesByEnvironment.forEach((environment, invList) {
-      summariesByEnvironment[environment] = _generateSummaries(invList);
+      final summ = _generateSummaries(invList);
+      final numbers = invList.map((s) => s.box_number).toList();
+      groups.add(
+        EnvironmentGroup(
+          environment: environment,
+          summary: summ,
+          numbers: numbers,
+        ),
+      );
     });
 
-    return summariesByEnvironment;
+    return groups;
   }
 
   Future<void> _shareDeliveryNote(BuildContext context) async {

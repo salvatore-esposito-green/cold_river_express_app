@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:cold_river_express_app/models/environment_group.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -7,7 +8,7 @@ import 'package:cold_river_express_app/models/box_summary.dart';
 class PdfService {
   Future<Uint8List> generateDeliveryNotePdf(
     List<BoxSummary> summaries,
-    Map<String, List<BoxSummary>> groupedByEnvironment,
+    List<EnvironmentGroup> groupedByEnvironment,
   ) async {
     final double totalVolume = summaries.fold(
       0,
@@ -15,14 +16,27 @@ class PdfService {
     );
     final Map<String, double> subTotalVolumes = {};
 
-    groupedByEnvironment.forEach((environment, boxes) {
+    groupedByEnvironment.forEach((environmentGroup) {
+      final environment = environmentGroup.environment;
+      final boxes = environmentGroup.summary;
+
       subTotalVolumes[environment] = boxes.fold(
         0,
         (acc, box) => acc + box.volume,
       );
     });
 
-    final pdf = pw.Document();
+    final pdf = pw.Document(
+      version: PdfVersion.pdf_1_5,
+      compress: true,
+      pageMode: PdfPageMode.outlines,
+      title: 'Delivery Note',
+      author: 'Cold River Express',
+      subject: 'Delivery Note',
+      keywords: 'delivery, note, cold river express',
+      creator: 'Cold River Express App',
+      producer: 'Cold River Express App',
+    );
 
     pdf.addPage(
       pw.Page(
@@ -100,98 +114,125 @@ class PdfService {
       ),
     );
 
-    groupedByEnvironment.forEach((environment, boxes) {
+    groupedByEnvironment.forEach((group) {
       pdf.addPage(
-        pw.Page(
+        pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
-              mainAxisAlignment: pw.MainAxisAlignment.start,
-              mainAxisSize: pw.MainAxisSize.max,
-              children: [
-                pw.Text(
-                  'Delivery Note',
-                  style: pw.TextStyle(
-                    fontSize: 22,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                  textAlign: pw.TextAlign.center,
-                ),
-                pw.Text(
-                  'Packages grouped by environment',
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                  textAlign: pw.TextAlign.center,
-                ),
-                pw.SizedBox(height: 20),
-                pw.Text(
-                  environment,
-                  style: pw.TextStyle(
-                    fontSize: 22,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                  textAlign: pw.TextAlign.left,
-                ),
-                pw.SizedBox(height: 20),
-                pw.TableHelper.fromTextArray(
-                  cellAlignment: pw.Alignment.center,
-                  data: <List<String>>[
-                    <String>['Number', 'Box Size', 'Volume'],
-                    ...boxes.map(
-                      (summary) => [
-                        'N. ${summary.count}',
-                        summary.boxSize,
-                        '${summary.volume.toStringAsFixed(3)} m³',
-                      ],
+            return [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                mainAxisAlignment: pw.MainAxisAlignment.start,
+                mainAxisSize: pw.MainAxisSize.max,
+                children: [
+                  pw.Text(
+                    'Delivery Note',
+                    style: pw.TextStyle(
+                      fontSize: 22,
+                      fontWeight: pw.FontWeight.bold,
                     ),
-                  ],
-                ),
-                pw.SizedBox(height: 20),
-                pw.SizedBox(height: 20),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.end,
-                  children: [
-                    pw.Text(
-                      'Tot. Box.s ',
-                      style: pw.TextStyle(fontSize: 18),
-                      textAlign: pw.TextAlign.right,
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.Text(
+                    'Packages grouped by environment',
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.bold,
                     ),
-                    pw.SizedBox(width: 8),
-                    pw.Text(
-                      '${boxes.fold(0, (total, summary) => total + summary.count)}',
-                      style: pw.TextStyle(
-                        fontSize: 18,
-                        fontWeight: pw.FontWeight.bold,
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 20),
+                  pw.Text(
+                    group.environment,
+                    style: pw.TextStyle(
+                      fontSize: 22,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                    textAlign: pw.TextAlign.left,
+                  ),
+                  pw.SizedBox(height: 20),
+                  pw.TableHelper.fromTextArray(
+                    cellAlignment: pw.Alignment.center,
+                    data: <List<String>>[
+                      <String>['Number', 'Box Size', 'Volume'],
+                      ...group.summary.map(
+                        (summary) => [
+                          'N. ${summary.count}',
+                          summary.boxSize,
+                          '${summary.volume.toStringAsFixed(3)} m³',
+                        ],
                       ),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                  ],
-                ),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.end,
-                  children: [
-                    pw.Text(
-                      'Tot. Vol. (m³) ',
-                      style: pw.TextStyle(fontSize: 18),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                    pw.SizedBox(width: 8),
-                    pw.Text(
-                      subTotalVolumes[environment]?.toStringAsFixed(2) ??
-                          '0.00',
-                      style: pw.TextStyle(
-                        fontSize: 18,
-                        fontWeight: pw.FontWeight.bold,
+                    ],
+                  ),
+                  pw.SizedBox(height: 20),
+                  pw.SizedBox(height: 20),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        'Tot. Box.s ',
+                        style: pw.TextStyle(fontSize: 18),
+                        textAlign: pw.TextAlign.right,
                       ),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                  ],
-                ),
-              ],
-            );
+                      pw.SizedBox(width: 8),
+                      pw.Text(
+                        '${group.summary.fold(0, (total, summary) => total + summary.count)}',
+                        style: pw.TextStyle(
+                          fontSize: 18,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                        textAlign: pw.TextAlign.right,
+                      ),
+                    ],
+                  ),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        'Tot. Vol. (m³) ',
+                        style: pw.TextStyle(fontSize: 18),
+                        textAlign: pw.TextAlign.right,
+                      ),
+                      pw.SizedBox(width: 8),
+                      pw.Text(
+                        subTotalVolumes[group.environment]?.toStringAsFixed(
+                              2,
+                            ) ??
+                            '0.00',
+                        style: pw.TextStyle(
+                          fontSize: 18,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                        textAlign: pw.TextAlign.right,
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 16),
+                  pw.Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children:
+                        group.numbers.map((number) {
+                          return pw.Container(
+                            width: 61,
+                            height: 61,
+                            alignment: pw.Alignment.center,
+                            decoration: pw.BoxDecoration(
+                              border: pw.Border.all(width: 1),
+                            ),
+                            child: pw.Text(
+                              number,
+                              style: pw.TextStyle(
+                                fontSize: 28,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                  ),
+                ],
+              ),
+            ];
           },
         ),
       );
@@ -202,7 +243,7 @@ class PdfService {
 
   Future<bool> previewDeliveryNotePdf(
     List<BoxSummary> summaries,
-    Map<String, List<BoxSummary>> groupedByEnvironment,
+    List<EnvironmentGroup> groupedByEnvironment,
   ) async {
     final Uint8List pdfData = await generateDeliveryNotePdf(
       summaries,
@@ -216,7 +257,7 @@ class PdfService {
 
   Future<bool> shareDeliveryNotePdf(
     List<BoxSummary> summaries,
-    Map<String, List<BoxSummary>> groupedByEnvironment,
+    List<EnvironmentGroup> groupedByEnvironment,
   ) async {
     final Uint8List pdfData = await generateDeliveryNotePdf(
       summaries,

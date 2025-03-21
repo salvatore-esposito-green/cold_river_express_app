@@ -20,9 +20,11 @@ class QRScanScreenState extends State<QRScanScreen> {
   @override
   void reassemble() {
     super.reassemble();
+
     if (Platform.isAndroid) {
       controller?.pauseCamera();
     }
+
     Future.delayed(const Duration(seconds: 1), () {
       controller?.resumeCamera();
     });
@@ -55,6 +57,7 @@ class QRScanScreenState extends State<QRScanScreen> {
     });
   }
 
+  // TODO: fix this
   @override
   void deactivate() {
     controller?.pauseCamera();

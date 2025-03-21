@@ -57,4 +57,8 @@ class InventoryRepository {
   Future<bool> replaceInventory(String backupFilePath) async {
     return await dbHelper.replaceDatabase(backupFilePath);
   }
+
+  Future<void> updateImagePath(String oldPath, String newPath) async {
+    return await dbHelper.updateImagePath(oldPath, newPath);
+  }
 }
