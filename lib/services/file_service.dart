@@ -16,7 +16,7 @@ class FileService {
     final dbFile = await _getDatabaseFile();
     if (dbFile == null || !dbFile.existsSync()) return null;
 
-    final directory = await getExternalStorageDirectory();
+    final directory = await getApplicationDocumentsDirectory();
     if (directory == null) return null;
 
     final newPath = "${directory.path}/inventor_version_$version.db";
