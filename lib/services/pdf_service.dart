@@ -38,81 +38,104 @@ class PdfService {
       producer: 'Cold River Express App',
     );
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.center,
-            mainAxisAlignment: pw.MainAxisAlignment.start,
-            mainAxisSize: pw.MainAxisSize.max,
-            children: [
-              pw.Text(
-                'Delivery Note',
-                style: pw.TextStyle(
-                  fontSize: 22,
-                  fontWeight: pw.FontWeight.bold,
+    const int itemsPerPage = 25;
+    List<List<BoxSummary>> chunks = [];
+    for (var i = 0; i < summaries.length; i += itemsPerPage) {
+      chunks.add(
+        summaries.sublist(
+          i,
+          i + itemsPerPage > summaries.length
+              ? summaries.length
+              : i + itemsPerPage,
+        ),
+      );
+    }
+
+    for (var i = 0; i < chunks.length; i++) {
+      final chunk = chunks[i];
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              mainAxisAlignment: pw.MainAxisAlignment.start,
+              mainAxisSize: pw.MainAxisSize.max,
+              children: [
+                pw.Text(
+                  'Delivery Note',
+                  style: pw.TextStyle(
+                    fontSize: 22,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                  textAlign: pw.TextAlign.center,
                 ),
-                textAlign: pw.TextAlign.center,
-              ),
-              pw.SizedBox(height: 20),
-              pw.TableHelper.fromTextArray(
-                cellAlignment: pw.Alignment.center,
-                data: <List<String>>[
-                  <String>['Number', 'Box Size', 'Volume'],
-                  ...summaries.map(
-                    (summary) => [
-                      'N. ${summary.count}',
-                      summary.boxSize,
-                      '${summary.volume.toStringAsFixed(3)} m³',
+                pw.SizedBox(height: 20),
+                pw.TableHelper.fromTextArray(
+                  cellAlignment: pw.Alignment.center,
+                  data: <List<String>>[
+                    <String>['Number', 'Box Size', 'Volume'],
+                    ...chunk.map(
+                      (summary) => [
+                        'N. ${summary.count}',
+                        summary.boxSize,
+                        '${summary.volume.toStringAsFixed(3)} m³',
+                      ],
+                    ),
+                  ],
+                ),
+                if (i == chunks.length - 1)
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.SizedBox(height: 20),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          pw.Text(
+                            'Tot. Box.s ',
+                            style: pw.TextStyle(fontSize: 18),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                          pw.SizedBox(width: 8),
+                          pw.Text(
+                            '${summaries.fold(0, (total, summary) => total + summary.count)}',
+                            style: pw.TextStyle(
+                              fontSize: 18,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                        ],
+                      ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          pw.Text(
+                            'Tot. Vol. (m³) ',
+                            style: pw.TextStyle(fontSize: 18),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                          pw.SizedBox(width: 8),
+                          pw.Text(
+                            totalVolume.toStringAsFixed(2),
+                            style: pw.TextStyle(
+                              fontSize: 18,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-              pw.SizedBox(height: 20),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    'Tot. Box.s ',
-                    style: pw.TextStyle(fontSize: 18),
-                    textAlign: pw.TextAlign.right,
-                  ),
-                  pw.SizedBox(width: 8),
-                  pw.Text(
-                    '${summaries.fold(0, (total, summary) => total + summary.count)}',
-                    style: pw.TextStyle(
-                      fontSize: 18,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                    textAlign: pw.TextAlign.right,
-                  ),
-                ],
-              ),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    'Tot. Vol. (m³) ',
-                    style: pw.TextStyle(fontSize: 18),
-                    textAlign: pw.TextAlign.right,
-                  ),
-                  pw.SizedBox(width: 8),
-                  pw.Text(
-                    totalVolume.toStringAsFixed(2),
-                    style: pw.TextStyle(
-                      fontSize: 18,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                    textAlign: pw.TextAlign.right,
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
+              ],
+            );
+          },
+        ),
+      );
+    }
 
     groupedByEnvironment.forEach((group) {
       pdf.addPage(
