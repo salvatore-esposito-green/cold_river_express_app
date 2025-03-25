@@ -2,6 +2,7 @@ import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:cold_river_express_app/database/migrate_images_from_caches.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/services/bottom_sheet_service.dart';
+import 'package:cold_river_express_app/utils/get_app_info.dart';
 import 'package:cold_river_express_app/widgets/modal/change_logo_modal.dart';
 import 'package:cold_river_express_app/widgets/modal/color_picker_modal.dart';
 import 'package:file_picker/file_picker.dart';
@@ -16,6 +17,25 @@ class AppDrawer extends StatefulWidget {
 
 class AppDrawerState extends State<AppDrawer> {
   InventoryRepository inventoryRepository = InventoryRepository();
+
+  String _version = '';
+  String _buildNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadAppInfo();
+  }
+
+  Future<void> _loadAppInfo() async {
+    final appInfo = await getAppInfo();
+
+    setState(() {
+      _version = appInfo['version'] ?? '';
+      _buildNumber = appInfo['buildNumber'] ?? '';
+    });
+  }
 
   Future<void> _pickPrimaryColor() async {
     await showDialog(
@@ -101,13 +121,23 @@ class AppDrawerState extends State<AppDrawer> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,
             ),
-            child: Center(
-              child: Text(
-                'Customize Your App',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Customize Your App',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
                 ),
-              ),
+                Text(
+                  'Version: $_version - Build ($_buildNumber)',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+              ],
             ),
           ),
 

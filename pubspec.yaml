@@ -3,7 +3,7 @@ description: "Help people during their move to catalog boxes and print labels"
 
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+1
 
 environment:
   sdk: ^3.7.0
@@ -33,6 +33,7 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   file_picker: ^9.1.0
+  package_info_plus: ^8.3.0
 
 dev_dependencies:
   flutter_test:
@@ -46,6 +47,8 @@ flutter:
 
 flutter_launcher_icons:
   image_path_android: "assets/icons/icon-710x599-android.png"
+  image_path_ios: "assets/icons/icon-1024x1024.png"
+  ios: true 
   android: true 
   adaptive_icon_foreground: "assets/icons/icon-foreground-432x432.png" 
   adaptive_icon_foreground_inset: 16 
