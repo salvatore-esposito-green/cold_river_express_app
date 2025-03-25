@@ -84,7 +84,28 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                           if (file.existsSync()) {
                             return Hero(
                               tag: _currentInventory.id,
-                              child: Image.file(file, fit: BoxFit.cover),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => Scaffold(
+                                            appBar: AppBar(),
+                                            body: Center(
+                                              child: InteractiveViewer(
+                                                child: Image.file(
+                                                  file,
+                                                  fit: BoxFit.contain,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                    ),
+                                  );
+                                },
+                                child: Image.file(file, fit: BoxFit.cover),
+                              ),
                             );
                           } else {
                             return Container(

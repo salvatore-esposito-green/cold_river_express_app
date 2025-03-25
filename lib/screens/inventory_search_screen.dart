@@ -99,18 +99,17 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                       tag: inventory.id,
                       child: CircleAvatar(
                         radius: 24,
-                        child:
+                        backgroundImage:
                             File(inventory.image_path!).existsSync()
-                                ? ClipOval(
-                                  child: Image.file(
-                                    File(inventory.image_path!),
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                                : const Icon(
+                                ? FileImage(File(inventory.image_path!))
+                                : null,
+                        child:
+                            !File(inventory.image_path!).existsSync()
+                                ? const Icon(
                                   Icons.image_not_supported,
                                   size: 24,
-                                ),
+                                )
+                                : null,
                       ),
                     )
                     : Hero(
