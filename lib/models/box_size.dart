@@ -39,4 +39,16 @@ class BoxSize {
       height: int.parse(parts[2]),
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! BoxSize) return false;
+    return length == other.length &&
+        width == other.width &&
+        height == other.height;
+  }
+
+  @override
+  int get hashCode => length.hashCode ^ width.hashCode ^ height.hashCode;
 }

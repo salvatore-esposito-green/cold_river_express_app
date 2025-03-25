@@ -32,12 +32,28 @@ class _BoxSizesSelectState extends State<BoxSizesSelect> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _selectedBoxSize = value;
+      isBoxSizeValid(value).then((exists) {
+        if (exists != null) {
+          _showBoxSizeExistsDialog(value, exists).then((selected) {
+            setState(() {
+              _selectedBoxSize = selected;
+            });
+            if (widget.onChanged != null) {
+              widget.onChanged!(selected!);
+            }
+          });
+
+          return;
+        }
+
+        setState(() {
+          _selectedBoxSize = value;
+        });
+
+        if (widget.onChanged != null) {
+          widget.onChanged!(value);
+        }
       });
-      if (widget.onChanged != null) {
-        widget.onChanged!(value);
-      }
     });
   }
 
@@ -110,5 +126,71 @@ class _BoxSizesSelectState extends State<BoxSizesSelect> {
         );
       },
     );
+  }
+
+  Future<String?> _showBoxSizeExistsDialog(String value, String exists) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Box Size Exists'),
+          content: Text(
+            'A box size with these dimensions already exists. ($exists)\nDo you want to use the existing size?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(exists);
+              },
+              child: Text('Yes'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(value);
+              },
+              child: Text('No'),
+            ),
+          ],
+        );
+      },
+    );
+    return result;
+  }
+
+  Future<String?> isBoxSizeValid(String value) async {
+    if (value.isEmpty) {
+      return null;
+    }
+
+    final boxSizes = await _boxSizesFuture!;
+    List<List<int>> matrix =
+        boxSizes
+            .map((boxSize) => [boxSize.length, boxSize.width, boxSize.height])
+            .toList();
+
+    List<int> target =
+        value.split('x').map((e) => int.parse(e.trim())).toList();
+
+    List<List<int>> result = findRowsWithNumbers(matrix, target);
+
+    if (result.isNotEmpty) {
+      return result.first.join('x');
+    }
+
+    return null;
+  }
+
+  List<List<int>> findRowsWithNumbers(
+    List<List<int>> matrix,
+    List<int> target,
+  ) {
+    return matrix.where((row) {
+      /**
+       * Even if there isn't a perfect one-to-one matching for each line,
+       * the suggestion remains valid. It is ultimately up to the user to decide whether
+       * to accept the suggestion or not.
+       */
+      return target.every((num) => row.contains(num));
+    }).toList();
   }
 }

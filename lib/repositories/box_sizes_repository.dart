@@ -10,10 +10,10 @@ class BoxSizeRepository {
 
     final List<Map<String, dynamic>> maps = await db.query(
       'box_sizes',
-      orderBy: 'id ASC',
+      orderBy: 'length ASC',
     );
 
-    return maps.map((map) => BoxSize.fromMap(map)).toList();
+    return maps.map((map) => BoxSize.fromMap(map)).toSet().toList();
   }
 
   Future<int> insertBoxSize(BoxSize boxSize) async {
