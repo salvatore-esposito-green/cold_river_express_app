@@ -39,6 +39,18 @@ class DBHelper {
 
     final String path = join(documentsDirectory.path, fileName);
 
+    final File dbFile = File(
+      join(documentsDirectory.path, 'inventor_version_$version.db'),
+    );
+
+    final Directory? extDir = await getExternalStorageDirectory();
+
+    final File backupFile = File(
+      join(extDir!.path, 'backup_inventor_version_$version.db'),
+    );
+
+    await dbFile.copy(backupFile.path);
+
     return await openDatabase(
       path,
       version: int.parse(version),

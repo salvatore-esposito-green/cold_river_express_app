@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cold_river_express_app/services/image_picking_service.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -8,7 +7,9 @@ import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/widgets/inventory_form_widget.dart';
 
 class InventoryInsertScreen extends StatefulWidget {
-  const InventoryInsertScreen({super.key});
+  final String? qrCode;
+
+  const InventoryInsertScreen({super.key, this.qrCode});
 
   @override
   State<InventoryInsertScreen> createState() => _InventoryInsertScreenState();
@@ -21,7 +22,6 @@ class _InventoryInsertScreenState extends State<InventoryInsertScreen> {
 
   Future<void> _pickImage() async {
     final pickedImagePath = await _pickerService.pickImage();
-
     if (pickedImagePath != null) {
       setState(() {
         _imagePath = pickedImagePath;
@@ -82,7 +82,7 @@ class _InventoryInsertScreenState extends State<InventoryInsertScreen> {
                   }
 
                   final newInventory = Inventory(
-                    id: const Uuid().v4(),
+                    id: widget.qrCode ?? const Uuid().v4(),
                     box_number: snapshot.data.toString(),
                     contents: [],
                     image_path: _imagePath,

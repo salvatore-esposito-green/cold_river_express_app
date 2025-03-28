@@ -49,6 +49,8 @@ class QRScanScreenState extends State<QRScanScreen> {
 
           controller.pauseCamera();
         } else {
+          Navigator.pushNamed(context, '/insert', arguments: scanData.code);
+          controller.pauseCamera();
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('No inventory found')));

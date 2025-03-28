@@ -20,7 +20,10 @@ class RouteGenerator {
           builder: (_) => InventoryDetailsScreen(inventory: inventory),
         );
       case '/insert':
-        return MaterialPageRoute(builder: (_) => InventoryInsertScreen());
+        final qrCode = settings.arguments as String?;
+        return MaterialPageRoute(
+          builder: (_) => InventoryInsertScreen(qrCode: qrCode),
+        );
       case '/edit':
         final inventory = settings.arguments as Inventory;
         return MaterialPageRoute(
