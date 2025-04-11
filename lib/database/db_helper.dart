@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cold_river_express_app/database/query_labels.dart';
+import 'package:cold_river_express_app/utils/get_path.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -43,10 +44,10 @@ class DBHelper {
       join(documentsDirectory.path, 'inventor_version_$version.db'),
     );
 
-    final Directory? extDir = await getExternalStorageDirectory();
+    final String? extDir = await getPath();
 
     final File backupFile = File(
-      join(extDir!.path, 'backup_inventor_version_$version.db'),
+      join(extDir!, 'backup_inventor_version_$version.db'),
     );
 
     await dbFile.copy(backupFile.path);
