@@ -16,5 +16,8 @@ build_ios:
 build_android:
 	@version_with_build=$$(grep '^version:' pubspec.yaml | awk '{print $$2}') ; \
 	version=$${version_with_build%%+*} ; \
-	build=$${version_with_build#*+} ; \
+	build=$$(echo $${version_with_build#*+} | xargs) ; \
+	if [ -z "$$build" ]; then \
+		echo "Error: build number is empty" && exit 1; \
+	fi; \
 	flutter build apk --release --build-name=$$version --build-number=$$build
