@@ -4,6 +4,10 @@
 
 The Flutter Inventory Management App is a mobile application designed to help users efficiently track and manage inventory items. It allows you to add items with details, organize them by location or category, and retrieve information quickly using search and QR code scanning. The app uses a local SQLite database for storage, ensuring your inventory data is available offline and can be easily shared or backed up. This project demonstrates a practical use of Flutter for business needs, combining database CRUD operations, camera integration for QR scanning, and even optional Bluetooth printing for labels.
 
+<div align="center">
+	<img alt="Detail View and Bluetooth Printer " src="https://i.ibb.co/QjvSwCwV/IMG-9673.jpg">
+</div>
+
 ## Features
 
 •	**Add, Edit, and Manage Items**: Create new inventory items with details like name, description, quantity, location, etc. Edit existing items or delete them as needed through a simple user interface.
