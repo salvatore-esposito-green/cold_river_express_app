@@ -93,11 +93,13 @@ class DBHelper {
   Future<List<Inventory>> getInventories() async {
     final db = await database;
 
-    final List<Map<String, dynamic>> maps = await db.query('inventory');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'inventory',
+      where: 'is_deleted = ?',
+      whereArgs: [0],
+    );
 
-    return List.generate(maps.length, (i) {
-      return Inventory.fromMap(maps[i]);
-    });
+    return List.generate(maps.length, (i) => Inventory.fromMap(maps[i]));
   }
 
   Future<Inventory?> getInventory(String id) async {
@@ -130,7 +132,12 @@ class DBHelper {
   Future<int> deleteInventory(String id) async {
     final db = await database;
 
-    return await db.delete('inventory', where: 'id = ?', whereArgs: [id]);
+    return await db.update(
+      'inventory',
+      {'is_deleted': 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<List<Inventory>> freeSearchInventory(String query) async {
@@ -138,8 +145,8 @@ class DBHelper {
 
     final List<Map<String, dynamic>> maps = await db.query(
       'inventory',
-      where: 'contents LIKE ?',
-      whereArgs: ['%$query%'],
+      where: 'contents LIKE ? AND is_deleted = ?',
+      whereArgs: ['%$query%', 0],
     );
 
     return List.generate(maps.length, (i) => Inventory.fromMap(maps[i]));
@@ -167,25 +174,22 @@ class DBHelper {
   ) async {
     final db = await database;
 
-    String whereClause = '';
-    List<dynamic> whereArgs = [];
+    String whereClause = 'is_deleted = ?';
+    List<dynamic> whereArgs = [0];
 
     if (environment != null) {
-      whereClause += 'environment = ?';
+      whereClause += ' AND environment = ?';
       whereArgs.add(environment);
     }
     if (position != null) {
-      if (whereClause.isNotEmpty) {
-        whereClause += ' AND ';
-      }
-      whereClause += 'position = ?';
+      whereClause += ' AND position = ?';
       whereArgs.add(position);
     }
 
     final List<Map<String, dynamic>> maps = await db.query(
       'inventory',
-      where: whereClause.isNotEmpty ? whereClause : null,
-      whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
+      where: whereClause,
+      whereArgs: whereArgs,
     );
 
     return List.generate(maps.length, (i) => Inventory.fromMap(maps[i]));
