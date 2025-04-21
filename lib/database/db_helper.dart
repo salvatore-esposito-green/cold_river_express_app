@@ -140,6 +140,29 @@ class DBHelper {
     );
   }
 
+  Future<int> recoverInventory(int id) async {
+    final db = await database;
+
+    return await db.update(
+      'inventory',
+      {'is_deleted': 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Inventory>> getDeletedInventories() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'inventory',
+      where: 'is_deleted = ?',
+      whereArgs: [1],
+    );
+
+    return List.generate(maps.length, (i) => Inventory.fromMap(maps[i]));
+  }
+
   Future<List<Inventory>> freeSearchInventory(String query) async {
     final db = await database;
 
