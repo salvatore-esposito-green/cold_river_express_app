@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cold_river_express_app/widgets/app_drawer.dart';
+import 'package:cold_river_express_app/widgets/modal/confirmation_delete_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cold_river_express_app/config/app_config.dart';
@@ -74,6 +75,17 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
           context,
         ).showSnackBar(const SnackBar(content: Text("Item deleted")));
       },
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return ConfirmationDeleteModal(
+              onCancel: () => Navigator.of(context).pop(false),
+              onConfirm: () => Navigator.of(context).pop(true),
+            );
+          },
+        );
+      },
       child: Container(
         color:
             isSelected
@@ -137,14 +149,22 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                     children: [
                       const Icon(Icons.pin_drop, size: 12),
                       const SizedBox(width: 4),
-                      Text(
-                        inventory.position!,
-                        style: const TextStyle(fontSize: 10),
+                      Flexible(
+                        child: Text(
+                          inventory.position!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 10),
+                        ),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        '[${inventory.size}]',
-                        style: const TextStyle(fontSize: 10),
+                      Flexible(
+                        child: Text(
+                          '[${inventory.size}]',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 10),
+                        ),
                       ),
                     ],
                   ),
