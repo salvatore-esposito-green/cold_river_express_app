@@ -8,7 +8,7 @@ import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
-final String version = "6";
+final String version = "7";
 
 class DBHelper {
   static final DBHelper _instance = DBHelper._internal();
@@ -26,6 +26,17 @@ class DBHelper {
       if (currentVersion < int.parse(version)) {
         if (kDebugMode) {
           print('Upgrading database from version $currentVersion to $version');
+        }
+
+        /*
+        ** This functionality was introduced in version 1.0.4.
+        ** It supports the implementation of soft delete, allowing records to be
+        ** marked as inactive instead of being permanently removed.
+        */
+        if (currentVersion < 7) {
+          await _database!.execute(
+            'ALTER TABLE inventory ADD COLUMN is_deleted INTEGER DEFAULT 0',
+          );
         }
 
         _database = await _initDB('inventor_version_$version.db');
