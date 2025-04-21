@@ -81,6 +81,7 @@ class InventoryFormWidgetState extends State<InventoryFormWidget> {
         size: _selectedSize,
         image_path: widget.imagePath,
         last_updated: DateTime.now(),
+        isDeleted: false,
       );
       await widget.onSubmit(updatedInventory);
     }

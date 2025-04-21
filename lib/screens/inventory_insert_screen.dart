@@ -90,6 +90,7 @@ class _InventoryInsertScreenState extends State<InventoryInsertScreen> {
                     position: null,
                     environment: null,
                     last_updated: DateTime.now(),
+                    isDeleted: false,
                   );
 
                   return Padding(

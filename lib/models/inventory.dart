@@ -39,7 +39,7 @@ class Inventory {
       position: map['position'],
       environment: map['environment'],
       last_updated: DateTime.parse(map['last_updated']),
-      isDeleted: map['isDeleted'] ?? 0,
+      isDeleted: map['is_deleted'] == 1,
     );
   }
 
@@ -53,7 +53,7 @@ class Inventory {
       'position': position,
       'environment': environment,
       'last_updated': last_updated.toIso8601String(),
-      'isDeleted': isDeleted,
+      'is_deleted': isDeleted ? 1 : 0,
     };
   }
 
