@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ConfirmationDeleteModal extends StatelessWidget {
+class ConfirmArchiveInventoryModal extends StatelessWidget {
   final VoidCallback onCancel;
   final VoidCallback onConfirm;
 
-  const ConfirmationDeleteModal({
+  const ConfirmArchiveInventoryModal({
     super.key,
     required this.onCancel,
     required this.onConfirm,
