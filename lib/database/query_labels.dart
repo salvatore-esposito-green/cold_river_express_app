@@ -8,7 +8,8 @@ class QueryLabels {
       size TEXT NOT NULL,
       position TEXT,
       environment TEXT,
-      last_updated TEXT NOT NULL
+      last_updated TEXT NOT NULL,
+      is_deleted INTEGER NOT NULL DEFAULT 0
     )
   ''';
 

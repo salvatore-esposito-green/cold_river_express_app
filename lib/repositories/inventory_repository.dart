@@ -27,8 +27,28 @@ class InventoryRepository {
     await dbHelper.updateInventoriesPosition(ids, position);
   }
 
+  Future<List<Inventory>> getDeletedInventories() async {
+    return await dbHelper.getDeletedInventories();
+  }
+
+  Future<void> archiveInventoryById(String id) async {
+    await dbHelper.archiveInventory(id);
+  }
+
+  Future<void> restoreInventoryById(String id) async {
+    await dbHelper.recoverInventory(id);
+  }
+
+  Future<void> restoreAllInventories() async {
+    await dbHelper.restoreAllInventories();
+  }
+
   Future<int> deleteInventoryById(String id) async {
     return await dbHelper.deleteInventory(id);
+  }
+
+  Future<void> deleteAllInventories() async {
+    await dbHelper.deleteAllInventories();
   }
 
   Future<List<Inventory>> freeSearchInventory(String query) async {

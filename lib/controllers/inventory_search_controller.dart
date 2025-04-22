@@ -78,8 +78,8 @@ class InventorySearchController extends ChangeNotifier {
     await loadInventories();
   }
 
-  Future<void> deleteInventory(String inventoryId) async {
-    await _repository.deleteInventoryById(inventoryId);
+  Future<void> archiveInventory(String inventoryId) async {
+    await _repository.archiveInventoryById(inventoryId);
     await loadInventories();
   }
 }

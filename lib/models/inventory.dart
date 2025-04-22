@@ -12,6 +12,7 @@ class Inventory {
   final String? environment;
   // ignore: non_constant_identifier_names
   final DateTime last_updated;
+  final bool isDeleted;
 
   Inventory({
     required this.id,
@@ -25,6 +26,7 @@ class Inventory {
     this.environment,
     // ignore: non_constant_identifier_names
     required this.last_updated,
+    required this.isDeleted,
   });
 
   factory Inventory.fromMap(Map<String, dynamic> map) {
@@ -37,6 +39,7 @@ class Inventory {
       position: map['position'],
       environment: map['environment'],
       last_updated: DateTime.parse(map['last_updated']),
+      isDeleted: map['is_deleted'] == 1,
     );
   }
 
@@ -50,6 +53,7 @@ class Inventory {
       'position': position,
       'environment': environment,
       'last_updated': last_updated.toIso8601String(),
+      'is_deleted': isDeleted ? 1 : 0,
     };
   }
 
@@ -65,6 +69,7 @@ class Inventory {
     String? environment,
     // ignore: non_constant_identifier_names
     DateTime? last_updated,
+    bool? isDeleted,
   }) {
     return Inventory(
       id: id ?? this.id,
@@ -75,6 +80,7 @@ class Inventory {
       position: position ?? this.position,
       environment: environment ?? this.environment,
       last_updated: last_updated ?? this.last_updated,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 }
