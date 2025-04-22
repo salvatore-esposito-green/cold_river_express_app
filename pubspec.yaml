@@ -3,7 +3,7 @@ description: "Help people during their move to catalog boxes and print labels"
 
 publish_to: 'none'
 
-version: 1.0.3+1
+version: 1.0.4+1
 
 environment:
   sdk: ^3.7.0
