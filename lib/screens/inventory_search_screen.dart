@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:cold_river_express_app/widgets/app_drawer.dart';
-import 'package:cold_river_express_app/widgets/modal/confirmation_delete_modal.dart';
+import 'package:cold_river_express_app/widgets/modal/confirm_archive_inventory_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cold_river_express_app/config/app_config.dart';
@@ -70,16 +70,16 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
       ),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
-        _controller.deleteInventory(inventory.id);
+        _controller.archiveInventory(inventory.id);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text("Item deleted")));
+        ).showSnackBar(const SnackBar(content: Text("Item archived")));
       },
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
           context: context,
           builder: (context) {
-            return ConfirmationDeleteModal(
+            return ConfirmArchiveInventoryModal(
               onCancel: () => Navigator.of(context).pop(false),
               onConfirm: () => Navigator.of(context).pop(true),
             );

@@ -222,7 +222,7 @@ class DBHelper {
     );
   }
 
-  Future<int> deleteInventory(String id) async {
+  Future<int> archiveInventory(String id) async {
     final db = await database;
 
     return await db.update(
@@ -233,7 +233,7 @@ class DBHelper {
     );
   }
 
-  Future<int> recoverInventory(int id) async {
+  Future<int> recoverInventory(String id) async {
     final db = await database;
 
     return await db.update(
@@ -241,6 +241,33 @@ class DBHelper {
       {'is_deleted': 0},
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<int> restoreAllInventories() async {
+    final db = await database;
+
+    return await db.update(
+      'inventory',
+      {'is_deleted': 0},
+      where: 'is_deleted = ?',
+      whereArgs: [1],
+    );
+  }
+
+  Future<int> deleteInventory(String id) async {
+    final db = await database;
+
+    return await db.delete('inventory', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteAllInventories() async {
+    final db = await database;
+
+    return await db.delete(
+      'inventory',
+      where: 'is_deleted = ?',
+      whereArgs: [1],
     );
   }
 
