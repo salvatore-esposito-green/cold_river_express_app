@@ -78,10 +78,14 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                 children: [
                   _currentInventory.image_path != null &&
                           _currentInventory.image_path!.isNotEmpty
-                      ? Builder(
-                        builder: (context) {
+                      ? FutureBuilder<bool>(
+                        future: File(_currentInventory.image_path!).exists(),
+                        initialData: true,
+                        builder: (context, snapshot) {
                           final file = File(_currentInventory.image_path!);
-                          if (file.existsSync()) {
+                          final fileExists = snapshot.data ?? false;
+
+                          if (fileExists) {
                             return Hero(
                               tag: _currentInventory.id,
                               child: GestureDetector(
