@@ -47,7 +47,11 @@ class BluetoothPrinterProvider extends ChangeNotifier {
     _preferredDeviceId = prefs.getString('preferred_device_id');
 
     if (_preferredDeviceId != null) {
-      await connect(_preferredDeviceId!);
+      // Check if Bluetooth is enabled before attempting to connect
+      final bool bluetoothEnabled = await PrintBluetoothThermal.bluetoothEnabled;
+      if (bluetoothEnabled) {
+        await connect(_preferredDeviceId!);
+      }
     }
   }
 
