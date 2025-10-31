@@ -69,20 +69,41 @@ class FileService {
   }
 
   Future<bool> importDatabase() async {
+    if (kDebugMode) {
+      print('[FileService] importDatabase() called, kIsWeb: $kIsWeb');
+    }
+
     if (kIsWeb) {
       // Su web, usa il metodo specifico restoreFromBackup
       // Nota: dobbiamo fare un cast al tipo concreto per accedere al metodo
       final dbService = _dbService;
-      if (dbService.runtimeType.toString() == 'DatabaseServiceWeb') {
+      final serviceType = dbService.runtimeType.toString();
+
+      if (kDebugMode) {
+        print('[FileService] Database service type: $serviceType');
+      }
+
+      if (serviceType == 'DatabaseServiceWeb') {
         // Usiamo dynamic per accedere al metodo specifico web
         try {
-          return await (dbService as dynamic).restoreFromBackup();
-        } catch (e) {
           if (kDebugMode) {
-            print("Error importing database on web: $e");
+            print('[FileService] Calling restoreFromBackup()...');
+          }
+          final result = await (dbService as dynamic).restoreFromBackup();
+          if (kDebugMode) {
+            print('[FileService] restoreFromBackup() returned: $result');
+          }
+          return result;
+        } catch (e, stackTrace) {
+          if (kDebugMode) {
+            print("[FileService] Error importing database on web: $e");
+            print("[FileService] Stack trace: $stackTrace");
           }
           return false;
         }
+      }
+      if (kDebugMode) {
+        print('[FileService] Service type mismatch, returning false');
       }
       return false;
     }

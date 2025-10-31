@@ -1,5 +1,6 @@
 import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:cold_river_express_app/widgets/platform_image.dart';
+import 'package:cold_river_express_app/utils/web_reload_export.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/services/file_service.dart';
@@ -43,6 +44,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> importDatabase(BuildContext context) async {
+    if (kDebugMode) {
+      print('[Settings] importDatabase() called');
+    }
+
     // Mostra un dialog di conferma
     final confirmed = await showDialog<bool>(
       context: context,
@@ -66,19 +71,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
 
+    if (kDebugMode) {
+      print('[Settings] Dialog result: $confirmed');
+    }
+
     if (confirmed != true || !mounted) return;
 
+    if (kDebugMode) {
+      print('[Settings] Starting import...');
+    }
+
     final importRes = await _fileService.importDatabase();
+
+    if (kDebugMode) {
+      print('[Settings] Import result: $importRes');
+    }
 
     if (!mounted) return;
 
     if (importRes) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Database imported successfully! Please reload the app.'),
-          duration: Duration(seconds: 3),
-        ),
-      );
+      if (kIsWeb) {
+        // Su web, ricarica automaticamente la pagina dopo 1 secondo
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Database imported successfully! Reloading...'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+
+        // Ricarica la pagina dopo 1 secondo
+        Future.delayed(Duration(seconds: 1), () {
+          reloadPage();
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Database imported successfully! Please restart the app.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
       return;
     }
 

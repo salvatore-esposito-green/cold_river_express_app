@@ -3,7 +3,9 @@ import 'package:cold_river_express_app/database/migrate_images_from_caches.dart'
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/screens/inventory_archived_screen.dart';
 import 'package:cold_river_express_app/services/bottom_sheet_service.dart';
+import 'package:cold_river_express_app/services/file_service.dart';
 import 'package:cold_river_express_app/utils/get_app_info.dart';
+import 'package:cold_river_express_app/utils/web_reload_export.dart';
 import 'package:cold_river_express_app/widgets/modal/change_logo_modal.dart';
 import 'package:cold_river_express_app/widgets/modal/color_picker_modal.dart';
 import 'package:file_picker/file_picker.dart';
@@ -19,6 +21,7 @@ class AppDrawer extends StatefulWidget {
 
 class AppDrawerState extends State<AppDrawer> {
   InventoryRepository inventoryRepository = InventoryRepository();
+  final FileService _fileService = FileService();
 
   String _version = '';
   String _buildNumber = '';
@@ -76,7 +79,103 @@ class AppDrawerState extends State<AppDrawer> {
     );
   }
 
-  Future<void> importBackup() async {
+  Future<void> _handleBackup() async {
+    if (kIsWeb) {
+      // Su web, mostra dialog con opzioni Export/Import
+      await _showWebBackupDialog();
+    } else {
+      // Su mobile, comportamento originale (import)
+      await _importBackupMobile();
+    }
+  }
+
+  Future<void> _showWebBackupDialog() async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Backup & Restore'),
+          content: Text('Choose an action:'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _exportBackupWeb();
+              },
+              icon: Icon(Icons.upload_file),
+              label: Text('Export'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _importBackupWeb();
+              },
+              icon: Icon(Icons.download),
+              label: Text('Import'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _exportBackupWeb() async {
+    if (kDebugMode) {
+      print('[Drawer] Exporting backup...');
+    }
+
+    final success = await _fileService.shareDatabase();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Backup exported successfully!'
+              : 'Error exporting backup.',
+        ),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _importBackupWeb() async {
+    if (kDebugMode) {
+      print('[Drawer] Importing backup...');
+    }
+
+    final success = await _fileService.importDatabase();
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Backup imported successfully! Reloading...'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+
+      // Ricarica la pagina dopo 1 secondo
+      Future.delayed(Duration(seconds: 1), () {
+        reloadPage();
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error importing backup.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _importBackupMobile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.any,
       allowMultiple: false,
@@ -218,7 +317,7 @@ class AppDrawerState extends State<AppDrawer> {
               );
             },
           ),
-          ListTile(title: const Text('Backup'), onTap: importBackup),
+          ListTile(title: const Text('Backup'), onTap: _handleBackup),
           if (!kIsWeb)
             ListTile(
               title: const Text('Migrate Images From Caches'),

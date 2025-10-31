@@ -353,6 +353,10 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
 
   Future<bool> restoreFromBackup() async {
     try {
+      if (kDebugMode) {
+        print('[Import] Starting file picker...');
+      }
+
       final html.FileUploadInputElement input =
           html.FileUploadInputElement()
             ..accept = 'application/json'
@@ -362,50 +366,95 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
 
       if (input.files == null || input.files!.isEmpty) {
         if (kDebugMode) {
-          print('No file selected');
+          print('[Import] No file selected');
         }
         return false;
       }
 
       final file = input.files!.first;
-      final reader = html.FileReader();
+      if (kDebugMode) {
+        print('[Import] File selected: ${file.name}');
+      }
 
+      final reader = html.FileReader();
       reader.readAsText(file);
       await reader.onLoadEnd.first;
 
       final String jsonString = reader.result as String;
+      if (kDebugMode) {
+        print('[Import] File read, size: ${jsonString.length} chars');
+      }
+
       final Map<String, dynamic> backup = jsonDecode(jsonString);
+      if (kDebugMode) {
+        print('[Import] Backup parsed, keys: ${backup.keys.toList()}');
+      }
 
       final storage = html.window.localStorage;
 
+      // Ripristina inventories
       if (backup.containsKey('inventories')) {
-        storage[_inventoryKey] = backup['inventories'];
+        final inventoriesData = backup['inventories'];
+        // Se è una stringa JSON, usala direttamente; se è un oggetto, convertilo
+        final inventoriesString =
+            inventoriesData is String
+                ? inventoriesData
+                : jsonEncode(inventoriesData);
+        storage[_inventoryKey] = inventoriesString;
+        if (kDebugMode) {
+          print('[Import] Inventories restored: $inventoriesString');
+        }
       }
 
+      // Ripristina box_sizes
       if (backup.containsKey('box_sizes')) {
-        storage[_boxSizesKey] = backup['box_sizes'];
+        final boxSizesData = backup['box_sizes'];
+        final boxSizesString =
+            boxSizesData is String ? boxSizesData : jsonEncode(boxSizesData);
+        storage[_boxSizesKey] = boxSizesString;
+        if (kDebugMode) {
+          print('[Import] Box sizes restored: $boxSizesString');
+        }
       }
 
+      // Ripristina deleted_inventories
       if (backup.containsKey('deleted_inventories')) {
-        storage[_deletedInventoryKey] = backup['deleted_inventories'];
+        final deletedData = backup['deleted_inventories'];
+        final deletedString =
+            deletedData is String ? deletedData : jsonEncode(deletedData);
+        storage[_deletedInventoryKey] = deletedString;
+        if (kDebugMode) {
+          print('[Import] Deleted inventories restored: $deletedString');
+        }
       }
 
+      // Ripristina immagini
       if (backup.containsKey('images')) {
-        final Map<String, dynamic> images = backup['images'];
-        images.forEach((key, value) {
-          if (key.startsWith('img_')) {
-            storage[key] = value.toString();
+        final images = backup['images'];
+        if (images is Map) {
+          int imageCount = 0;
+          images.forEach((key, value) {
+            final keyStr = key.toString();
+            if (keyStr.startsWith('img_')) {
+              storage[keyStr] = value.toString();
+              imageCount++;
+            }
+          });
+          if (kDebugMode) {
+            print('[Import] Restored $imageCount images');
           }
-        });
+        }
       }
 
       if (kDebugMode) {
-        print('Backup restored successfully');
+        print('[Import] Backup restored successfully!');
+        print('[Import] localStorage keys: ${storage.keys.toList()}');
       }
       return true;
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('Error restoring backup: $e');
+        print('[Import] Error restoring backup: $e');
+        print('[Import] Stack trace: $stackTrace');
       }
       return false;
     }
