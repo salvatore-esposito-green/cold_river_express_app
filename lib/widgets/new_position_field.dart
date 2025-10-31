@@ -24,6 +24,12 @@ class NewPositionFieldState extends State<NewPositionField> {
       padding: const EdgeInsets.all(16.0),
       child: TextField(
         controller: _positionController,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (value) {
+          widget.onPositionChanged(value);
+          _positionController.clear();
+          FocusScope.of(context).unfocus();
+        },
         decoration: InputDecoration(
           labelText: 'New Position',
           hintText: 'Enter new position...',
@@ -32,6 +38,8 @@ class NewPositionFieldState extends State<NewPositionField> {
             icon: Icon(Icons.check),
             onPressed: () {
               widget.onPositionChanged(_positionController.text);
+              _positionController.clear();
+              FocusScope.of(context).unfocus();
             },
           ),
           border: OutlineInputBorder(

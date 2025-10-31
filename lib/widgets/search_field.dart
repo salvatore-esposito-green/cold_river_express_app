@@ -29,6 +29,10 @@ class SearchField extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: TextField(
         controller: searchController,
+        textInputAction: TextInputAction.search,
+        onSubmitted: (value) {
+          FocusScope.of(context).unfocus();
+        },
         decoration: InputDecoration(
           labelText: 'Search Inventory',
           hintText: 'Enter search text...',

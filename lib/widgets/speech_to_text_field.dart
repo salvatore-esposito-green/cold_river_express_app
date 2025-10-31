@@ -89,6 +89,10 @@ class SpeechToTextFieldState extends State<SpeechToTextField> {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: widget.controller,
+      textInputAction: TextInputAction.next,
+      onFieldSubmitted: (value) {
+        FocusScope.of(context).nextFocus();
+      },
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,
