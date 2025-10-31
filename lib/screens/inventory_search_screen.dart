@@ -1,6 +1,7 @@
 import 'package:cold_river_express_app/widgets/app_drawer.dart';
 import 'package:cold_river_express_app/widgets/modal/confirm_archive_inventory_modal.dart';
 import 'package:cold_river_express_app/widgets/platform_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cold_river_express_app/config/app_config.dart';
@@ -209,6 +210,239 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
     );
   }
 
+  Widget _buildInventoryCard(Inventory inventory) {
+    final bool isSelected = _controller.selectedInventoryIds.contains(
+      inventory.id,
+    );
+
+    return Dismissible(
+      key: Key(inventory.id),
+      background: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.error,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(Icons.delete, color: Colors.white, size: 48),
+      ),
+      direction: DismissDirection.up,
+      onDismissed: (direction) {
+        _controller.archiveInventory(inventory.id);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Item archived")));
+      },
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return ConfirmArchiveInventoryModal(
+              onCancel: () => Navigator.of(context).pop(false),
+              onConfirm: () => Navigator.of(context).pop(true),
+            );
+          },
+        );
+      },
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side:
+              isSelected
+                  ? BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  )
+                  : BorderSide.none,
+        ),
+        color:
+            isSelected
+                ? Theme.of(
+                  context,
+                ).colorScheme.primaryContainer.withAlpha((0.3 * 255).round())
+                : null,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.pushNamed(context, '/details', arguments: inventory);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Image section with selection overlay
+              Expanded(
+                flex: 3,
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                      child:
+                          inventory.image_path?.isNotEmpty == true
+                              ? Hero(
+                                tag: inventory.id,
+                                child: PlatformImage(
+                                  imagePath: inventory.image_path!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  errorWidget: Container(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer,
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        size: 48,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                              : Hero(
+                                tag: inventory.id,
+                                child: Container(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
+                                  child: const Center(
+                                    child: Icon(Icons.inbox, size: 48),
+                                  ),
+                                ),
+                              ),
+                    ),
+                    // Selection button
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: InkWell(
+                        onTap: () =>
+                            _controller.toggleSelectInventory(inventory.id),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha((0.9 * 255).round()),
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child:
+                              isSelected
+                                  ? Icon(
+                                    Icons.check_circle,
+                                    color: Theme.of(context).colorScheme.primary,
+                                    size: 24,
+                                  )
+                                  : Icon(
+                                    Icons.circle_outlined,
+                                    color: Theme.of(context).colorScheme.primary,
+                                    size: 24,
+                                  ),
+                        ),
+                      ),
+                    ),
+                    // Environment chip
+                    if (inventory.environment?.isNotEmpty == true)
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Chip(
+                          materialTapTargetSize: MaterialTapTargetSize.padded,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          labelPadding:
+                              const EdgeInsets.symmetric(horizontal: 4),
+                          visualDensity: VisualDensity.compact,
+                          label: Text(
+                            inventory.environment!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          backgroundColor:
+                              Theme.of(context).colorScheme.secondary,
+                          elevation: 2,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // Content section
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Box number
+                      Text(
+                        'Box N. ${inventory.box_number}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      // Contents
+                      Expanded(
+                        child: Text(
+                          inventory.contents.join(', '),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Position and size
+                      if (inventory.position?.isNotEmpty ?? false)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.pin_drop,
+                              size: 14,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                inventory.position!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '[${inventory.size}]',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<InventorySearchController>.value(
@@ -291,6 +525,35 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                           : controller.inventories.isEmpty
                           ? const Center(
                             child: Text('No inventory items found.'),
+                          )
+                          : kIsWeb
+                          ? LayoutBuilder(
+                            builder: (context, constraints) {
+                              // Responsive column count based on screen width
+                              int crossAxisCount = 2;
+                              if (constraints.maxWidth > 1200) {
+                                crossAxisCount = 4;
+                              } else if (constraints.maxWidth > 800) {
+                                crossAxisCount = 3;
+                              }
+
+                              return GridView.builder(
+                                padding: const EdgeInsets.all(16.0),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  crossAxisSpacing: 16.0,
+                                  mainAxisSpacing: 16.0,
+                                  childAspectRatio: 0.75,
+                                ),
+                                itemCount: controller.inventories.length,
+                                itemBuilder: (context, index) {
+                                  return _buildInventoryCard(
+                                    controller.inventories[index],
+                                  );
+                                },
+                              );
+                            },
                           )
                           : ListView.builder(
                             itemCount: controller.inventories.length,
