@@ -15,6 +15,8 @@ class _ShareScreenState extends State<ShareScreen> {
   Future<void> shareDatabase(BuildContext context) async {
     final sharedRes = await _fileService.shareDatabase();
 
+    if (!mounted) return;
+
     if (sharedRes) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -17,7 +17,6 @@ class FileService {
     if (dbFile == null || !dbFile.existsSync()) return null;
 
     final directory = await getApplicationDocumentsDirectory();
-    if (directory == null) return null;
 
     final newPath = "${directory.path}/inventor_version_$version.db";
     final newFile = File(newPath);

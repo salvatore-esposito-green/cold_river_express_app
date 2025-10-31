@@ -81,10 +81,14 @@ class AppDrawerState extends State<AppDrawer> {
       allowMultiple: false,
     );
 
+    if (!mounted) return;
+
     if (result != null && result.files.single.path != null) {
       String backupFilePath = result.files.single.path!;
       try {
         await inventoryRepository.replaceInventory(backupFilePath);
+
+        if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -93,6 +97,8 @@ class AppDrawerState extends State<AppDrawer> {
           ),
         );
       } catch (e) {
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error importing backup: $e'),

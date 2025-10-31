@@ -18,6 +18,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> shareDatabase(BuildContext context) async {
     final sharedRes = await _fileService.shareDatabase();
 
+    if (!mounted) return;
+
     if (sharedRes) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -41,10 +43,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final XFile? pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
     );
+
+    if (!mounted) return;
+
     if (pickedFile != null) {
-      setState(() {
-        AppConfig.logoPath = pickedFile.path;
-      });
+      await AppConfig.saveLogoPath(pickedFile.path);
+
+      if (!mounted) return;
+
+      setState(() {});
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -56,9 +63,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _deleteLogo() async {
-    setState(() {
-      AppConfig.logoPath = '';
-    });
+    await AppConfig.resetLogoPath();
+
+    if (!mounted) return;
+
+    setState(() {});
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -39,31 +39,32 @@ class QRScanScreenState extends State<QRScanScreen> {
 
       hasNavigated = true;
 
-      if (mounted) {
-        var inventory = await _repository.getInventoryById(scanData.code!);
+      if (!mounted) return;
 
-        if (inventory != null) {
-          HapticFeedback.vibrate();
+      var inventory = await _repository.getInventoryById(scanData.code!);
 
-          Navigator.pushNamed(context, '/details', arguments: inventory);
+      if (!mounted) return;
 
-          controller.pauseCamera();
-        } else {
-          Navigator.pushNamed(context, '/insert', arguments: scanData.code);
-          controller.pauseCamera();
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('No inventory found')));
-        }
+      if (inventory != null) {
+        HapticFeedback.vibrate();
+
+        Navigator.pushNamed(context, '/details', arguments: inventory);
+
+        controller.pauseCamera();
+      } else {
+        Navigator.pushNamed(context, '/insert', arguments: scanData.code);
+        controller.pauseCamera();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('No inventory found')));
       }
     });
   }
 
-  // TODO: fix this
   @override
-  void deactivate() {
-    controller?.pauseCamera();
-    super.deactivate();
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
   }
 
   @override
