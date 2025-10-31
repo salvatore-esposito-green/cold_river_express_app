@@ -77,6 +77,15 @@ class SpeechToTextFieldState extends State<SpeechToTextField> {
   }
 
   @override
+  void dispose() {
+    if (_isListening) {
+      _speech.stop();
+    }
+    _speech.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: widget.controller,
