@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:cold_river_express_app/database/db_helper.dart';
+import 'package:cold_river_express_app/core/interfaces/database_service_interface.dart';
+import 'package:cold_river_express_app/core/platform_factory.dart';
 
 class FileService {
   static final FileService _instance = FileService._internal();
@@ -10,22 +10,39 @@ class FileService {
 
   FileService._internal();
 
-  final DBHelper _dbHelper = DBHelper();
+  final DatabaseServiceInterface _dbService = PlatformFactory.createDatabaseService();
 
   Future<String?> copyDatabaseToDownloads() async {
-    final dbFile = await _getDatabaseFile();
-    if (dbFile == null || !dbFile.existsSync()) return null;
+    if (kIsWeb) {
+      if (kDebugMode) {
+        print("Database copy not supported on web");
+      }
+      return null;
+    }
 
-    final directory = await getApplicationDocumentsDirectory();
+    final dbPath = await _dbService.getCurrentDbPath();
+    if (dbPath == null) return null;
 
-    final newPath = "${directory.path}/inventor_version_$version.db";
-    final newFile = File(newPath);
+    final dbFile = File(dbPath);
+    if (!dbFile.existsSync()) return null;
+
+    final directory = await _dbService.getCurrentDbPath();
+    if (directory == null) return null;
+
+    final newPath = "${directory}_copy_${DateTime.now().millisecondsSinceEpoch}.db";
 
     await dbFile.copy(newPath);
     return newPath;
   }
 
   Future<bool> shareDatabase() async {
+    if (kIsWeb) {
+      if (kDebugMode) {
+        print("Database sharing not supported on web");
+      }
+      return false;
+    }
+
     final copiedFilePath = await copyDatabaseToDownloads();
     if (copiedFilePath == null) {
       if (kDebugMode) {
@@ -50,10 +67,5 @@ class FileService {
       }
       return false;
     }
-  }
-
-  Future<File?> _getDatabaseFile() async {
-    final db = await _dbHelper.database;
-    return File(db.path);
   }
 }

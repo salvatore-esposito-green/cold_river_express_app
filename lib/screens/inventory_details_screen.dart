@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:cold_river_express_app/providers/printer_provider.dart';
 import 'package:cold_river_express_app/utils/format_date.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
+import 'package:cold_river_express_app/widgets/platform_image.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -80,10 +82,9 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                   _currentInventory.image_path != null &&
                           _currentInventory.image_path!.isNotEmpty
                       ? FutureBuilder<bool>(
-                        future: File(_currentInventory.image_path!).exists(),
+                        future: kIsWeb ? Future.value(true) : File(_currentInventory.image_path!).exists(),
                         initialData: true,
                         builder: (context, snapshot) {
-                          final file = File(_currentInventory.image_path!);
                           final fileExists = snapshot.data ?? false;
 
                           if (fileExists) {
@@ -99,8 +100,8 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                                             appBar: AppBar(),
                                             body: Center(
                                               child: InteractiveViewer(
-                                                child: Image.file(
-                                                  file,
+                                                child: PlatformImage(
+                                                  imagePath: _currentInventory.image_path!,
                                                   fit: BoxFit.contain,
                                                 ),
                                               ),
@@ -109,7 +110,10 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                                     ),
                                   );
                                 },
-                                child: Image.file(file, fit: BoxFit.cover),
+                                child: PlatformImage(
+                                  imagePath: _currentInventory.image_path!,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             );
                           } else {

@@ -1,8 +1,11 @@
-import 'package:cold_river_express_app/database/db_helper.dart';
+import 'package:cold_river_express_app/core/interfaces/database_service_interface.dart';
+import 'package:cold_river_express_app/core/platform_factory.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 
 class InventoryRepository {
-  final DBHelper dbHelper = DBHelper();
+  final DatabaseServiceInterface dbHelper;
+
+  InventoryRepository() : dbHelper = PlatformFactory.createDatabaseService();
 
   Future<void> addInventory(Inventory inventory) async {
     await dbHelper.insertInventory(inventory);

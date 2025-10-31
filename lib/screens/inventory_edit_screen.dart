@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:cold_river_express_app/services/image_picking_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/widgets/inventory_form_widget.dart';
+import 'package:cold_river_express_app/widgets/platform_image.dart';
 
 class InventoryEditScreen extends StatefulWidget {
   final Inventory inventory;
@@ -53,13 +55,23 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                         tag: widget.inventory.id,
                         child: Builder(
                           builder: (context) {
-                            final file = File(_imagePath!);
-                            if (file.existsSync()) {
-                              return Image.file(file, fit: BoxFit.cover);
-                            } else {
-                              return Container(
-                                color: Theme.of(context).colorScheme.primary,
+                            if (kIsWeb) {
+                              return PlatformImage(
+                                imagePath: _imagePath!,
+                                fit: BoxFit.cover,
+                                errorWidget: Container(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                               );
+                            } else {
+                              final file = File(_imagePath!);
+                              if (file.existsSync()) {
+                                return PlatformImage(imagePath: _imagePath!, fit: BoxFit.cover);
+                              } else {
+                                return Container(
+                                  color: Theme.of(context).colorScheme.primary,
+                                );
+                              }
                             }
                           },
                         ),

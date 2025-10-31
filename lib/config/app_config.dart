@@ -41,19 +41,17 @@ class AppConfig {
     primaryColor = newPrimary;
 
     if (isDarkMode || brightness == Brightness.dark) {
-      currentTheme.value =
-          MaterialTheme(
-            textTheme: textTheme,
-            primarySeed: newPrimary,
-            secondarySeed: secondaryColor,
-          ).dark();
+      currentTheme.value = MaterialTheme(
+        textTheme: textTheme,
+        primarySeed: newPrimary,
+        secondarySeed: secondaryColor,
+      ).dark();
     } else {
-      currentTheme.value =
-          MaterialTheme(
-            textTheme: textTheme,
-            primarySeed: newPrimary,
-            secondarySeed: secondaryColor,
-          ).light();
+      currentTheme.value = MaterialTheme(
+        textTheme: textTheme,
+        primarySeed: newPrimary,
+        secondarySeed: secondaryColor,
+      ).light();
     }
   }
 

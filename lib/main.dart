@@ -2,7 +2,7 @@ import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:cold_river_express_app/providers/printer_provider.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/routes/route_generator.dart';
-import 'package:cold_river_express_app/services/bluetooth_service.dart';
+import 'package:cold_river_express_app/core/platform_factory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +13,11 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting(AppConfig.dateLocal, null);
-  await BluetoothService.requestBluetoothPermissions();
+
+  // Richiedi permessi Bluetooth usando il servizio multi-piattaforma
+  final permissionService = PlatformFactory.createPermissionService();
+  await permissionService.requestBluetoothPermissions();
+
   await AppConfig.loadLogoPath();
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
@@ -21,7 +22,7 @@ class QRScanScreenState extends State<QRScanScreen> {
   void reassemble() {
     super.reassemble();
 
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       controller?.pauseCamera();
     }
 

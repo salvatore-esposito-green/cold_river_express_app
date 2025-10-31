@@ -1,4 +1,5 @@
 import 'package:cold_river_express_app/config/app_config.dart';
+import 'package:cold_river_express_app/widgets/platform_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -72,8 +73,8 @@ class _ChangeLogoModalState extends State<ChangeLogoModal> {
                   height: 50,
                   width: 50,
                   errorBuilder: (context, error, stackTrace) {
-                    return Image.file(
-                      File(AppConfig.logoPath),
+                    return PlatformImage(
+                      imagePath: AppConfig.logoPath,
                       height: 50,
                       width: 50,
                     );

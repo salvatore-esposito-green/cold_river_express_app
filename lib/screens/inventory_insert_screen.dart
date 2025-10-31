@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'package:cold_river_express_app/services/image_picking_service.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/widgets/inventory_form_widget.dart';
+import 'package:cold_river_express_app/widgets/platform_image.dart';
 
 class InventoryInsertScreen extends StatefulWidget {
   final String? qrCode;
@@ -55,7 +55,7 @@ class _InventoryInsertScreenState extends State<InventoryInsertScreen> {
                   _imagePath != null && _imagePath!.isNotEmpty
                       ? Hero(
                         tag: const Uuid().v4(),
-                        child: Image.file(File(_imagePath!), fit: BoxFit.cover),
+                        child: PlatformImage(imagePath: _imagePath!, fit: BoxFit.cover),
                       )
                       : Container(color: Theme.of(context).colorScheme.primary),
                   Center(

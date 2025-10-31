@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'package:cold_river_express_app/widgets/app_drawer.dart';
 import 'package:cold_river_express_app/widgets/modal/confirm_archive_inventory_modal.dart';
+import 'package:cold_river_express_app/widgets/platform_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cold_river_express_app/config/app_config.dart';
@@ -70,22 +70,21 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
     }
 
     if (inventory.image_path?.isNotEmpty == true) {
-      final file = File(inventory.image_path!);
       return Hero(
         tag: inventory.id,
-        child: FutureBuilder<bool>(
-          future: file.exists(),
-          initialData: true,
-          builder: (context, snapshot) {
-            final fileExists = snapshot.data ?? false;
-            return CircleAvatar(
-              radius: 24,
-              backgroundImage: fileExists ? FileImage(file) : null,
-              child: !fileExists
-                  ? const Icon(Icons.image_not_supported, size: 24)
-                  : null,
-            );
-          },
+        child: ClipOval(
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: PlatformImage(
+              imagePath: inventory.image_path!,
+              fit: BoxFit.cover,
+              errorWidget: const CircleAvatar(
+                radius: 24,
+                child: Icon(Icons.image_not_supported, size: 24),
+              ),
+            ),
+          ),
         ),
       );
     }

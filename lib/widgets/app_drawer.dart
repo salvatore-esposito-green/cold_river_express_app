@@ -7,6 +7,7 @@ import 'package:cold_river_express_app/utils/get_app_info.dart';
 import 'package:cold_river_express_app/widgets/modal/change_logo_modal.dart';
 import 'package:cold_river_express_app/widgets/modal/color_picker_modal.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -218,10 +219,11 @@ class AppDrawerState extends State<AppDrawer> {
             },
           ),
           ListTile(title: const Text('Backup'), onTap: importBackup),
-          ListTile(
-            title: const Text('Migrate Images From Caches'),
-            onTap: () => migrateCacheImagesAndUpdateDB(),
-          ),
+          if (!kIsWeb)
+            ListTile(
+              title: const Text('Migrate Images From Caches'),
+              onTap: () => migrateCacheImagesAndUpdateDB(),
+            ),
         ],
       ),
     );

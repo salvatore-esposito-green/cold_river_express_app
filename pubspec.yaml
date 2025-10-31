@@ -3,7 +3,7 @@ description: "Help people during their move to catalog boxes and print labels"
 
 publish_to: 'none'
 
-version: 1.0.4+1
+version: 1.0.5+1
 
 environment:
   sdk: ^3.7.0
@@ -12,28 +12,60 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+
+  # Database - condizionale per piattaforma
   sqflite: ^2.4.2
+  sqflite_common_ffi_web: ^0.4.0+1  # SQLite per web
+
+  # File System
   path_provider: ^2.1.5
   path: ^1.9.1
+
+  # Utilities
   uuid: ^4.5.1
+  intl: ^0.20.2
+
+  # Immagini
   image_picker: ^1.1.2
+  image: ^4.0.0  # Per manipolazione immagini
+
+  # QR Code
   qr_flutter: ^4.1.0
   qr_code_scanner_plus: ^2.0.10+1
+
+  # Storage
   shared_preferences: ^2.5.2
+
+  # Bluetooth (mobile only)
   flutter_esc_pos_utils: ^1.0.1
   print_bluetooth_thermal: ^1.1.6
+
+  # State Management
   provider: ^6.1.2
+
+  # Speech (mobile only)
   speech_to_text: ^7.0.0
-  intl: ^0.20.2
+
+  # UI
   flutter_launcher_icons: ^0.14.3
   google_fonts: ^6.2.1
-  share_plus: ^10.1.4
-  permission_handler: ^11.4.0
   flutter_colorpicker: ^1.1.0
+
+  # Share & Export
+  share_plus: ^10.1.4
   pdf: ^3.11.3
   printing: ^5.14.2
   file_picker: ^9.1.0
+
+  # Permissions (mobile only)
+  permission_handler: ^11.4.0
+
+  # App Info
   package_info_plus: ^8.3.0
+
+  # Web-specific
+  js: ^0.7.1
+  universal_html: ^2.2.4
 
 dev_dependencies:
   flutter_test:

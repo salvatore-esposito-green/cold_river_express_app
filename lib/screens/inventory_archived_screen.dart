@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:cold_river_express_app/controllers/inventories_archive_controller.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/widgets/modal/confirm_delete_all_inventories_mdoal.dart';
 import 'package:cold_river_express_app/widgets/modal/confirm_delete_inventory_modal.dart';
 import 'package:cold_river_express_app/widgets/modal/confirm_restore_all_inventories_modal.dart';
 import 'package:cold_river_express_app/widgets/modal/confirm_restore_inventory_modal.dart';
+import 'package:cold_river_express_app/widgets/platform_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -89,20 +88,31 @@ class InventoryArchivedScreenState extends State<InventoryArchivedScreen> {
         }
       },
       child: ListTile(
-        leading: Hero(
-          tag: inventory.id,
-          child: CircleAvatar(
-            radius: 24,
-            backgroundImage:
-                File(inventory.image_path!).existsSync()
-                    ? FileImage(File(inventory.image_path!))
-                    : null,
-            child:
-                !File(inventory.image_path!).existsSync()
-                    ? const Icon(Icons.image_not_supported, size: 24)
-                    : null,
-          ),
-        ),
+        leading: inventory.image_path?.isNotEmpty == true
+            ? Hero(
+                tag: inventory.id,
+                child: ClipOval(
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: PlatformImage(
+                      imagePath: inventory.image_path!,
+                      fit: BoxFit.cover,
+                      errorWidget: const CircleAvatar(
+                        radius: 24,
+                        child: Icon(Icons.image_not_supported, size: 24),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : const Hero(
+                tag: 'default',
+                child: CircleAvatar(
+                  radius: 24,
+                  child: Icon(Icons.inbox),
+                ),
+              ),
         title: Text('Box N. ${inventory.box_number}'),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
