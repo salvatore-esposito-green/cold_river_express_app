@@ -63,7 +63,7 @@ class QRScanScreenState extends State<QRScanScreen> {
 
   @override
   void dispose() {
-    controller?.dispose();
+    // Note: QRViewController disposal is automatic and no longer needed
     super.dispose();
   }
 
