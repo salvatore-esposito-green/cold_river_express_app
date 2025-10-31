@@ -14,6 +14,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting(AppConfig.dateLocal, null);
   await BluetoothService.requestBluetoothPermissions();
+  await AppConfig.loadLogoPath();
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
     _,

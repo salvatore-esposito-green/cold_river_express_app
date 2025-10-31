@@ -18,10 +18,15 @@ class _ChangeLogoModalState extends State<ChangeLogoModal> {
     final XFile? pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
     );
+
+    if (!mounted) return;
+
     if (pickedFile != null) {
-      setState(() {
-        AppConfig.logoPath = pickedFile.path;
-      });
+      await AppConfig.saveLogoPath(pickedFile.path);
+
+      if (!mounted) return;
+
+      setState(() {});
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -33,9 +38,11 @@ class _ChangeLogoModalState extends State<ChangeLogoModal> {
   }
 
   Future<void> _deleteLogo() async {
-    setState(() {
-      AppConfig.logoPath = '';
-    });
+    await AppConfig.resetLogoPath();
+
+    if (!mounted) return;
+
+    setState(() {});
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -96,12 +103,7 @@ class _ChangeLogoModalState extends State<ChangeLogoModal> {
           onPressed: () async {
             await _pickNewLogo();
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Logo changed successfully!'),
-                duration: Duration(seconds: 2),
-              ),
-            );
+            if (!mounted) return;
 
             Navigator.of(context).pop();
           },
