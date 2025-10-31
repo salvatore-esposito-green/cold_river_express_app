@@ -88,7 +88,9 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                   imagePath: _imagePath,
                   onSubmit: (updatedInventory) async {
                     await repository.updateInventory(updatedInventory);
-                    Navigator.pop(context, updatedInventory);
+                    if (context.mounted) {
+                      Navigator.pop(context, updatedInventory);
+                    }
                   },
                 ),
               ),

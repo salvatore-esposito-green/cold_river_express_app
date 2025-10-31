@@ -266,11 +266,13 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
                     ? NewPositionField(
                       onPositionChanged: (String value) async {
                         await controller.updateInventoriesPositions(value);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Positions updated successfully'),
-                          ),
-                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Positions updated successfully'),
+                            ),
+                          );
+                        }
                       },
                     )
                     : SearchField(

@@ -46,6 +46,7 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
             onSelected: (value) async {
               if (value == 'find') {
                 await printerService.scanBluetoothDevices();
+                if (!mounted) return;
                 _showDeviceSelection(context, printerService);
               } else if (value == 'disconnect') {
                 await printerService.disconnect();
@@ -312,7 +313,7 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
   ) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text("Select a Printer"),
           content:
@@ -327,7 +328,9 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                             subtitle: Text(device.macAdress),
                             onTap: () async {
                               await printerService.connect(device.macAdress);
-                              Navigator.pop(context);
+                              if (dialogContext.mounted) {
+                                Navigator.pop(dialogContext);
+                              }
                             },
                           );
                         }).toList(),

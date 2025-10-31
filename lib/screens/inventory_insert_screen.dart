@@ -100,11 +100,13 @@ class _InventoryInsertScreenState extends State<InventoryInsertScreen> {
                       imagePath: _imagePath,
                       onSubmit: (createdInventory) async {
                         await repository.addInventory(createdInventory);
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/details',
-                          arguments: createdInventory,
-                        );
+                        if (context.mounted) {
+                          Navigator.pushReplacementNamed(
+                            context,
+                            '/details',
+                            arguments: createdInventory,
+                          );
+                        }
                       },
                     ),
                   );
