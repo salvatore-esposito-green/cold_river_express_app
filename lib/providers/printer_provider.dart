@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_esc_pos_utils/flutter_esc_pos_utils.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image/image.dart' as img;
+import 'package:cold_river_express_app/core/platform_factory.dart';
+import 'package:cold_river_express_app/core/interfaces/bluetooth_service_interface.dart';
 
 class BluetoothPrinterProvider extends ChangeNotifier {
   String _platformVersion = 'Unknown';
   int _batteryLevel = 0;
   String? _preferredDeviceId;
-  List<BluetoothInfo> _bluetoothDevices = [];
+  List _bluetoothDevices =
+      []; // Changed to dynamic list for both mobile and web
   bool _isConnected = false;
+  late final BluetoothServiceInterface _bluetoothService;
 
   BluetoothPrinterProvider() {
+    _bluetoothService = PlatformFactory.createBluetoothService();
     _loadPreferredDevice();
   }
 
   // getters
-  List<BluetoothInfo> get bluetoothDevices => _bluetoothDevices;
+  List get bluetoothDevices => _bluetoothDevices;
   String get preferredDevice => _preferredDeviceId ?? '';
   String get getPlatformVersion => _platformVersion;
   int get getBatteryLevel => _batteryLevel;
@@ -25,8 +31,13 @@ class BluetoothPrinterProvider extends ChangeNotifier {
 
   Future<void> initPlatformState() async {
     try {
-      _platformVersion = await PrintBluetoothThermal.platformVersion;
-      _batteryLevel = await PrintBluetoothThermal.batteryLevel;
+      if (kIsWeb) {
+        _platformVersion = 'Web';
+        _batteryLevel = 100;
+      } else {
+        _platformVersion = await PrintBluetoothThermal.platformVersion;
+        _batteryLevel = await PrintBluetoothThermal.batteryLevel;
+      }
       notifyListeners();
     } on PlatformException {
       _platformVersion = 'Failed to get platform version.';
@@ -34,21 +45,20 @@ class BluetoothPrinterProvider extends ChangeNotifier {
   }
 
   Future<bool> isEnabled() async {
-    return await PrintBluetoothThermal.bluetoothEnabled;
+    return await _bluetoothService.isBluetoothEnabled();
   }
 
   Future<void> checkConnection() async {
-    _isConnected = await PrintBluetoothThermal.connectionStatus;
+    _isConnected = await _bluetoothService.isConnected();
     notifyListeners();
   }
 
   Future<void> _loadPreferredDevice() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _preferredDeviceId = prefs.getString('preferred_device_id');
+    _preferredDeviceId = await _bluetoothService.getPreferredDevice();
 
     if (_preferredDeviceId != null) {
-      // Check if Bluetooth is enabled before attempting to connect
-      final bool bluetoothEnabled = await PrintBluetoothThermal.bluetoothEnabled;
+      final bool bluetoothEnabled =
+          await _bluetoothService.isBluetoothEnabled();
       if (bluetoothEnabled) {
         await connect(_preferredDeviceId!);
       }
@@ -56,42 +66,84 @@ class BluetoothPrinterProvider extends ChangeNotifier {
   }
 
   Future<void> _savePreferredDevice(String deviceId) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('preferred_device_id', deviceId);
+    await _bluetoothService.savePreferredDevice(deviceId);
   }
 
-  Future<void> connect(String mac) async {
-    final bool result = await PrintBluetoothThermal.connect(
-      macPrinterAddress: mac,
-    );
+  Future<bool> connect(String deviceId) async {
+    final bool result = await _bluetoothService.connect(deviceId);
     if (result) {
-      await _savePreferredDevice(mac);
+      await _savePreferredDevice(deviceId);
       _isConnected = true;
     }
     notifyListeners();
+    return result;
   }
 
   Future<void> disconnect() async {
-    final bool status = await PrintBluetoothThermal.disconnect;
-    _isConnected = !status ? _isConnected : false;
+    final bool status = await _bluetoothService.disconnect();
+    _isConnected = !status;
     notifyListeners();
   }
 
   Future<void> scanBluetoothDevices() async {
-    _bluetoothDevices = await PrintBluetoothThermal.pairedBluetooths;
+    if (kIsWeb) {
+      // On web, calling connect will trigger the browser's device picker
+      // scanDevices returns empty list on web as per Web Bluetooth API design
+      final devices = await _bluetoothService.scanDevices();
+      _bluetoothDevices = devices;
+    } else {
+      // On mobile, get paired devices
+      _bluetoothDevices = await PrintBluetoothThermal.pairedBluetooths;
+    }
     notifyListeners();
   }
 
   Future<void> print(String qrCodeId, String boxNumber, String contents) async {
-    bool connectionStatus = await PrintBluetoothThermal.connectionStatus;
-    if (connectionStatus) {
-      List<int> label = await _generatePrintLabel(
-        qrCodeId,
-        boxNumber,
-        contents,
+    if (kDebugMode) {
+      debugPrint(
+        '[Provider] print() called - qrCodeId: $qrCodeId, boxNumber: $boxNumber',
       );
-      await PrintBluetoothThermal.writeBytes(label);
+    }
+
+    bool connectionStatus = await _bluetoothService.isConnected();
+    if (kDebugMode) {
+      debugPrint('[Provider] Connection status: $connectionStatus');
+    }
+
+    if (connectionStatus) {
+      if (kIsWeb) {
+        if (kDebugMode) {
+          debugPrint('[Provider] Using web Bluetooth service');
+        }
+        // Use web Bluetooth service
+        final success = await _bluetoothService.printLabel(
+          qrCodeId: qrCodeId,
+          boxNumber: boxNumber,
+          contents: contents,
+        );
+        if (kDebugMode) {
+          debugPrint('[Provider] Print result: $success');
+        }
+        if (!success) {
+          _isConnected = false;
+          notifyListeners();
+        }
+      } else {
+        if (kDebugMode) {
+          debugPrint('[Provider] Using mobile thermal printer');
+        }
+        // Use mobile thermal printer
+        List<int> label = await _generatePrintLabel(
+          qrCodeId,
+          boxNumber,
+          contents,
+        );
+        await PrintBluetoothThermal.writeBytes(label);
+      }
     } else {
+      if (kDebugMode) {
+        debugPrint('[Provider] ERROR: Not connected!');
+      }
       _isConnected = false;
       notifyListeners();
     }

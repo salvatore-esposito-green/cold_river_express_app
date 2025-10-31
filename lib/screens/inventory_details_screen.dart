@@ -47,9 +47,26 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
             ),
             onSelected: (value) async {
               if (value == 'find') {
-                await printerService.scanBluetoothDevices();
-                if (!mounted) return;
-                _showDeviceSelection(context, printerService);
+                if (kIsWeb) {
+                  final connected = await printerService.connect('');
+                  if (!mounted) return;
+                  if (connected) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Printer connected!')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to connect to printer'),
+                      ),
+                    );
+                  }
+                } else {
+                  // On mobile, scan and show list
+                  await printerService.scanBluetoothDevices();
+                  if (!mounted) return;
+                  _showDeviceSelection(context, printerService);
+                }
               } else if (value == 'disconnect') {
                 await printerService.disconnect();
               }
@@ -82,7 +99,10 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                   _currentInventory.image_path != null &&
                           _currentInventory.image_path!.isNotEmpty
                       ? FutureBuilder<bool>(
-                        future: kIsWeb ? Future.value(true) : File(_currentInventory.image_path!).exists(),
+                        future:
+                            kIsWeb
+                                ? Future.value(true)
+                                : File(_currentInventory.image_path!).exists(),
                         initialData: true,
                         builder: (context, snapshot) {
                           final fileExists = snapshot.data ?? false;
@@ -101,7 +121,9 @@ class _InventoryDetailsScreenState extends State<InventoryDetailsScreen> {
                                             body: Center(
                                               child: InteractiveViewer(
                                                 child: PlatformImage(
-                                                  imagePath: _currentInventory.image_path!,
+                                                  imagePath:
+                                                      _currentInventory
+                                                          .image_path!,
                                                   fit: BoxFit.contain,
                                                 ),
                                               ),

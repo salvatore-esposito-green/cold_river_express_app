@@ -1,6 +1,7 @@
 import 'dart:html' as html;
 import 'dart:js' as js;
 import 'dart:js_util' as js_util;
+import 'dart:typed_data';
 import 'package:cold_river_express_app/core/interfaces/bluetooth_service_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,22 +32,28 @@ class BluetoothServiceWeb implements BluetoothServiceInterface {
 
   @override
   Future<bool> isBluetoothEnabled() async {
-    // Web Bluetooth API non fornisce un modo diretto per verificare
-    // se il Bluetooth è abilitato. Restituiamo true se è disponibile.
     return await isBluetoothAvailable();
   }
 
   @override
   Future<bool> isConnected() async {
     try {
-      if (_currentDevice == null) return false;
+      if (_currentDevice == null) {
+        print('[BT Web] isConnected: No device');
+        return false;
+      }
 
-      // Verifica se il dispositivo è ancora connesso
-      final connected =
-          js_util.getProperty(_currentDevice, 'gatt') != null &&
-          js_util.callMethod(_currentDevice, 'gatt.connected', []);
-      return connected ?? false;
+      final gatt = js_util.getProperty(_currentDevice, 'gatt');
+      if (gatt == null) {
+        print('[BT Web] isConnected: No GATT');
+        return false;
+      }
+
+      final connected = js_util.getProperty(gatt, 'connected') ?? false;
+      print('[BT Web] isConnected: $connected');
+      return connected;
     } catch (e) {
+      print('[BT Web] isConnected error: $e');
       return false;
     }
   }
@@ -62,51 +69,106 @@ class BluetoothServiceWeb implements BluetoothServiceInterface {
       final navigator = html.window.navigator;
       final bluetooth = js_util.getProperty(navigator, 'bluetooth');
 
-      // Richiede all'utente di selezionare un dispositivo Bluetooth
       final options = js_util.jsify({
-        'filters': [
-          {
-            'services': [_printerServiceUuid],
-          },
+        'acceptAllDevices': true,
+        'optionalServices': [
+          _printerServiceUuid,
+          _printerCharacteristicUuid,
+          '000018f0-0000-1000-8000-00805f9b34fb', // Printer service
+          '00001101-0000-1000-8000-00805f9b34fb', // Serial Port Profile
         ],
-        'optionalServices': [_printerServiceUuid],
       });
 
+      print('[BT Web] Requesting device...');
       _currentDevice = await js_util.promiseToFuture(
         js_util.callMethod(bluetooth, 'requestDevice', [options]),
       );
 
-      if (_currentDevice == null) return false;
+      if (_currentDevice == null) {
+        print('[BT Web] No device selected');
+        return false;
+      }
+
+      final deviceName = js_util.getProperty(_currentDevice, 'name') as String?;
+      print('[BT Web] Device selected: $deviceName');
 
       // Connette al dispositivo
       final gatt = js_util.getProperty(_currentDevice, 'gatt');
+      print('[BT Web] Connecting to GATT server...');
       _currentServer = await js_util.promiseToFuture(
         js_util.callMethod(gatt, 'connect', []),
       );
 
-      // Ottiene il servizio di stampa
-      _currentService = await js_util.promiseToFuture(
-        js_util.callMethod(_currentServer, 'getPrimaryService', [
-          _printerServiceUuid,
-        ]),
-      );
+      print('[BT Web] Connected! Discovering services...');
 
-      // Ottiene la caratteristica per la scrittura
-      _currentCharacteristic = await js_util.promiseToFuture(
-        js_util.callMethod(_currentService, 'getCharacteristic', [
-          _printerCharacteristicUuid,
-        ]),
-      );
+      try {
+        final services = await js_util.promiseToFuture(
+          js_util.callMethod(_currentServer, 'getPrimaryServices', []),
+        );
+        print(
+          '[BT Web] Found ${js_util.getProperty(services, 'length')} services',
+        );
+
+        for (int i = 0; i < js_util.getProperty(services, 'length'); i++) {
+          final service = js_util.getProperty(services, i.toString());
+          final serviceUuid = js_util.getProperty(service, 'uuid');
+          print('[BT Web] Service $i UUID: $serviceUuid');
+
+          try {
+            final characteristics = await js_util.promiseToFuture(
+              js_util.callMethod(service, 'getCharacteristics', []),
+            );
+
+            for (
+              int j = 0;
+              j < js_util.getProperty(characteristics, 'length');
+              j++
+            ) {
+              final char = js_util.getProperty(characteristics, j.toString());
+              final charUuid = js_util.getProperty(char, 'uuid');
+              final properties = js_util.getProperty(char, 'properties');
+              final canWrite =
+                  js_util.getProperty(properties, 'write') ?? false;
+              final canWriteWithoutResponse =
+                  js_util.getProperty(properties, 'writeWithoutResponse') ??
+                  false;
+
+              print(
+                '[BT Web]   Char $j UUID: $charUuid, write: $canWrite, writeWR: $canWriteWithoutResponse',
+              );
+
+              if (canWrite || canWriteWithoutResponse) {
+                _currentService = service;
+                _currentCharacteristic = char;
+                print('[BT Web] Using writable characteristic: $charUuid');
+                break;
+              }
+            }
+
+            if (_currentCharacteristic != null) break;
+          } catch (e) {
+            print('[BT Web] Error reading service $i: $e');
+          }
+        }
+
+        if (_currentCharacteristic == null) {
+          print('[BT Web] No writable characteristic found!');
+          return false;
+        }
+      } catch (e) {
+        print('[BT Web] Error discovering services: $e');
+        return false;
+      }
 
       // Salva il dispositivo preferito
-      final deviceName = js_util.getProperty(_currentDevice, 'name') as String?;
       if (deviceName != null) {
         await savePreferredDevice(deviceName);
       }
 
+      print('[BT Web] Connection successful!');
       return true;
     } catch (e) {
-      print('Error connecting to Bluetooth device: $e');
+      print('[BT Web] Error connecting to Bluetooth device: $e');
       return false;
     }
   }
@@ -134,22 +196,65 @@ class BluetoothServiceWeb implements BluetoothServiceInterface {
     required String contents,
   }) async {
     try {
+      print('[BT Web] Starting print...');
+
       if (_currentCharacteristic == null) {
-        print('No characteristic available for printing');
+        print('[BT Web] ERROR: No characteristic available for printing');
         return false;
       }
 
-      // Genera i comandi ESC/POS per la stampa
-      final commands = _generateEscPosCommands(qrCodeId, boxNumber, contents);
+      if (_currentServer == null) {
+        print('[BT Web] ERROR: Not connected to device');
+        return false;
+      }
 
-      // Invia i comandi alla stampante
-      await js_util.promiseToFuture(
-        js_util.callMethod(_currentCharacteristic, 'writeValue', [commands]),
+      final connected = js_util.getProperty(
+        js_util.getProperty(_currentDevice, 'gatt'),
+        'connected',
       );
+      print('[BT Web] Connection status: $connected');
 
+      if (connected != true) {
+        print('[BT Web] ERROR: Device disconnected');
+        return false;
+      }
+
+      print('[BT Web] Generating ESC/POS commands...');
+      final commands = _generateEscPosCommands(qrCodeId, boxNumber, contents);
+      print('[BT Web] Generated ${commands.length} bytes');
+
+      // Bluetooth LE ha un MTU limitato (di solito 20-512 bytes)
+      const chunkSize = 20; // MTU minimo sicuro
+      for (int i = 0; i < commands.length; i += chunkSize) {
+        final end =
+            (i + chunkSize < commands.length) ? i + chunkSize : commands.length;
+        final chunk = commands.sublist(i, end);
+
+        print(
+          '[BT Web] Sending chunk ${i ~/ chunkSize + 1}/${(commands.length / chunkSize).ceil()} (${chunk.length} bytes)',
+        );
+
+        try {
+          // Converti in Uint8List per JavaScript
+          final uint8list = Uint8List.fromList(chunk);
+
+          await js_util.promiseToFuture(
+            js_util.callMethod(_currentCharacteristic, 'writeValue', [
+              uint8list,
+            ]),
+          );
+
+          await Future.delayed(const Duration(milliseconds: 50));
+        } catch (e) {
+          print('[BT Web] ERROR sending chunk: $e');
+          return false;
+        }
+      }
+
+      print('[BT Web] Print completed successfully!');
       return true;
     } catch (e) {
-      print('Error printing label: $e');
+      print('[BT Web] ERROR printing label: $e');
       return false;
     }
   }
