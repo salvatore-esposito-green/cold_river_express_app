@@ -40,7 +40,9 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
   }
 
   void _saveInventoriesToStorage(List<Inventory> inventories) {
-    final jsonString = jsonEncode(inventories.map((inv) => inv.toMap()).toList());
+    final jsonString = jsonEncode(
+      inventories.map((inv) => inv.toMap()).toList(),
+    );
     html.window.localStorage[_inventoryKey] = jsonString;
   }
 
@@ -60,7 +62,9 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
   }
 
   void _saveDeletedInventoriesToStorage(List<Inventory> inventories) {
-    final jsonString = jsonEncode(inventories.map((inv) => inv.toMap()).toList());
+    final jsonString = jsonEncode(
+      inventories.map((inv) => inv.toMap()).toList(),
+    );
     html.window.localStorage[_deletedInventoryKey] = jsonString;
   }
 
@@ -167,33 +171,40 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
 
     return inventories.where((inv) {
       return inv.box_number.toLowerCase().contains(lowerQuery) ||
-             inv.contents.any((content) => content.toLowerCase().contains(lowerQuery)) ||
-             (inv.environment?.toLowerCase().contains(lowerQuery) ?? false) ||
-             (inv.position?.toLowerCase().contains(lowerQuery) ?? false);
+          inv.contents.any(
+            (content) => content.toLowerCase().contains(lowerQuery),
+          ) ||
+          (inv.environment?.toLowerCase().contains(lowerQuery) ?? false) ||
+          (inv.position?.toLowerCase().contains(lowerQuery) ?? false);
     }).toList();
   }
 
   @override
-  Future<List<Inventory>> filterInventory(String? environment, String? position) async {
+  Future<List<Inventory>> filterInventory(
+    String? environment,
+    String? position,
+  ) async {
     final inventories = _getInventoriesFromStorage();
 
     return inventories.where((inv) {
-      bool matchesEnvironment = environment == null || inv.environment == environment;
+      bool matchesEnvironment =
+          environment == null || inv.environment == environment;
       bool matchesPosition = position == null || inv.position == position;
       return matchesEnvironment && matchesPosition;
     }).toList();
   }
 
   @override
-  Future<void> updateInventoriesPosition(List<String> ids, String position) async {
+  Future<void> updateInventoriesPosition(
+    List<String> ids,
+    String position,
+  ) async {
     final inventories = _getInventoriesFromStorage();
 
     for (var id in ids) {
       final index = inventories.indexWhere((inv) => inv.id == id);
       if (index != -1) {
-        inventories[index] = inventories[index].copyWith(
-          position: position,
-        );
+        inventories[index] = inventories[index].copyWith(position: position);
       }
     }
 
@@ -259,7 +270,11 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
     final boxSizes = _getBoxSizesFromStorage();
 
     // Genera un nuovo ID
-    final int newId = boxSizes.isEmpty ? 1 : boxSizes.map((bs) => bs.id ?? 0).reduce((a, b) => a > b ? a : b) + 1;
+    final int newId =
+        boxSizes.isEmpty
+            ? 1
+            : boxSizes.map((bs) => bs.id ?? 0).reduce((a, b) => a > b ? a : b) +
+                1;
     final newBoxSize = BoxSize(
       id: newId,
       width: boxSize.width,
@@ -288,21 +303,37 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
 
   @override
   Future<bool> createBackup() async {
-    // Esporta tutto il localStorage come JSON
     try {
+      final Map<String, String> images = {};
+
+      // Esporta tutte le immagini (chiavi che iniziano con 'img_')
+      final storage = html.window.localStorage;
+      for (var i = 0; i < storage.length; i++) {
+        final key = storage.keys.elementAt(i);
+        if (key.startsWith('img_')) {
+          images[key] = storage[key] ?? '';
+        }
+      }
+
       final backup = {
         'inventories': html.window.localStorage[_inventoryKey] ?? '[]',
         'box_sizes': html.window.localStorage[_boxSizesKey] ?? '[]',
-        'deleted_inventories': html.window.localStorage[_deletedInventoryKey] ?? '[]',
+        'deleted_inventories':
+            html.window.localStorage[_deletedInventoryKey] ?? '[]',
+        'images': images,
       };
 
       final jsonString = jsonEncode(backup);
       final blob = html.Blob([jsonString], 'application/json');
       final url = html.Url.createObjectUrlFromBlob(blob);
 
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'cold_river_backup_${DateTime.now().millisecondsSinceEpoch}.json')
-        ..click();
+      final anchor =
+          html.AnchorElement(href: url)
+            ..setAttribute(
+              'download',
+              'cold_river_backup_${DateTime.now().millisecondsSinceEpoch}.json',
+            )
+            ..click();
 
       html.Url.revokeObjectUrl(url);
       return true;
@@ -316,9 +347,68 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
 
   @override
   Future<bool> replaceDatabase(String backupFilePath) async {
-    // TODO: Implementare import da file
-    // Richiede file picker che non è implementato in questo stub
+    // Non usato su web, usa invece restoreFromBackup()
     return false;
+  }
+
+  Future<bool> restoreFromBackup() async {
+    try {
+      final html.FileUploadInputElement input =
+          html.FileUploadInputElement()
+            ..accept = 'application/json'
+            ..click();
+
+      await input.onChange.first;
+
+      if (input.files == null || input.files!.isEmpty) {
+        if (kDebugMode) {
+          print('No file selected');
+        }
+        return false;
+      }
+
+      final file = input.files!.first;
+      final reader = html.FileReader();
+
+      reader.readAsText(file);
+      await reader.onLoadEnd.first;
+
+      final String jsonString = reader.result as String;
+      final Map<String, dynamic> backup = jsonDecode(jsonString);
+
+      final storage = html.window.localStorage;
+
+      if (backup.containsKey('inventories')) {
+        storage[_inventoryKey] = backup['inventories'];
+      }
+
+      if (backup.containsKey('box_sizes')) {
+        storage[_boxSizesKey] = backup['box_sizes'];
+      }
+
+      if (backup.containsKey('deleted_inventories')) {
+        storage[_deletedInventoryKey] = backup['deleted_inventories'];
+      }
+
+      if (backup.containsKey('images')) {
+        final Map<String, dynamic> images = backup['images'];
+        images.forEach((key, value) {
+          if (key.startsWith('img_')) {
+            storage[key] = value.toString();
+          }
+        });
+      }
+
+      if (kDebugMode) {
+        print('Backup restored successfully');
+      }
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error restoring backup: $e');
+      }
+      return false;
+    }
   }
 
   @override
@@ -333,9 +423,7 @@ class DatabaseServiceWeb implements DatabaseServiceInterface {
 
     for (int i = 0; i < inventories.length; i++) {
       if (inventories[i].image_path == oldPath) {
-        inventories[i] = inventories[i].copyWith(
-          image_path: newPath,
-        );
+        inventories[i] = inventories[i].copyWith(image_path: newPath);
         updated = true;
       }
     }

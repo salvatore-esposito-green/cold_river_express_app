@@ -10,7 +10,8 @@ class FileService {
 
   FileService._internal();
 
-  final DatabaseServiceInterface _dbService = PlatformFactory.createDatabaseService();
+  final DatabaseServiceInterface _dbService =
+      PlatformFactory.createDatabaseService();
 
   Future<String?> copyDatabaseToDownloads() async {
     if (kIsWeb) {
@@ -29,7 +30,8 @@ class FileService {
     final directory = await _dbService.getCurrentDbPath();
     if (directory == null) return null;
 
-    final newPath = "${directory}_copy_${DateTime.now().millisecondsSinceEpoch}.db";
+    final newPath =
+        "${directory}_copy_${DateTime.now().millisecondsSinceEpoch}.db";
 
     await dbFile.copy(newPath);
     return newPath;
@@ -37,10 +39,7 @@ class FileService {
 
   Future<bool> shareDatabase() async {
     if (kIsWeb) {
-      if (kDebugMode) {
-        print("Database sharing not supported on web");
-      }
-      return false;
+      return await _dbService.createBackup();
     }
 
     final copiedFilePath = await copyDatabaseToDownloads();
@@ -67,5 +66,30 @@ class FileService {
       }
       return false;
     }
+  }
+
+  Future<bool> importDatabase() async {
+    if (kIsWeb) {
+      // Su web, usa il metodo specifico restoreFromBackup
+      // Nota: dobbiamo fare un cast al tipo concreto per accedere al metodo
+      final dbService = _dbService;
+      if (dbService.runtimeType.toString() == 'DatabaseServiceWeb') {
+        // Usiamo dynamic per accedere al metodo specifico web
+        try {
+          return await (dbService as dynamic).restoreFromBackup();
+        } catch (e) {
+          if (kDebugMode) {
+            print("Error importing database on web: $e");
+          }
+          return false;
+        }
+      }
+      return false;
+    }
+
+    if (kDebugMode) {
+      print("Database import not yet implemented on mobile");
+    }
+    return false;
   }
 }

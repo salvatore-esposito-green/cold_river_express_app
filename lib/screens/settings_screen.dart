@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:cold_river_express_app/config/app_config.dart';
 import 'package:cold_river_express_app/widgets/platform_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/services/file_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,7 +23,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (sharedRes) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Database shared successfully!'),
+          content: Text(
+            kIsWeb
+              ? 'Database exported successfully!'
+              : 'Database shared successfully!',
+          ),
           duration: Duration(seconds: 2),
         ),
       );
@@ -34,6 +37,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Error sharing the database.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> importDatabase(BuildContext context) async {
+    // Mostra un dialog di conferma
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Import Database'),
+        content: Text(
+          'This will replace all current data with the imported backup. '
+          'Make sure you have exported your current data before proceeding.\n\n'
+          'Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Import'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final importRes = await _fileService.importDatabase();
+
+    if (!mounted) return;
+
+    if (importRes) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Database imported successfully! Please reload the app.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error importing the database.'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -88,13 +139,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(Icons.share),
-              title: Text('Share Database'),
-              subtitle: Text('Export and share your app database.'),
+              leading: Icon(Icons.upload_file),
+              title: Text(kIsWeb ? 'Export Database' : 'Share Database'),
+              subtitle: Text(
+                kIsWeb
+                  ? 'Download a backup of your data and images.'
+                  : 'Export and share your app database.',
+              ),
               onTap: () {
                 shareDatabase(context);
               },
             ),
+            if (kIsWeb) ...[
+              const SizedBox(height: 8),
+              ListTile(
+                leading: Icon(Icons.download),
+                title: Text('Import Database'),
+                subtitle: Text('Restore data from a backup file.'),
+                onTap: () {
+                  importDatabase(context);
+                },
+              ),
+            ],
             const SizedBox(height: 16),
 
             Row(
