@@ -6,9 +6,14 @@ import 'package:cold_river_express_app/repositories/inventory_repository.dart';
 import 'package:cold_river_express_app/services/pdf_service.dart';
 import 'package:flutter/material.dart';
 
-class DeliveryNoteScreen extends StatelessWidget {
-  DeliveryNoteScreen({super.key});
+class DeliveryNoteScreen extends StatefulWidget {
+  const DeliveryNoteScreen({super.key});
 
+  @override
+  State<DeliveryNoteScreen> createState() => _DeliveryNoteScreenState();
+}
+
+class _DeliveryNoteScreenState extends State<DeliveryNoteScreen> {
   final PdfService _pdfService = PdfService();
   final InventoryRepository _inventoryRepository = InventoryRepository();
 
@@ -80,6 +85,8 @@ class DeliveryNoteScreen extends StatelessWidget {
       groupedByEnvironment,
     );
 
+    if (!mounted) return;
+
     if (pdf == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -110,6 +117,8 @@ class DeliveryNoteScreen extends StatelessWidget {
       summaries,
       groupedByEnvironment,
     );
+
+    if (!mounted) return;
 
     if (pdf == null) {
       ScaffoldMessenger.of(context).showSnackBar(
