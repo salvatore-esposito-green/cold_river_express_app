@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cold_river_express_app/models/inventory.dart';
 import 'package:cold_river_express_app/repositories/inventory_repository.dart';
@@ -11,6 +12,7 @@ class InventorySearchController extends ChangeNotifier {
   String? selectedEnvironment;
   String? selectedPosition;
   String query = '';
+  Timer? _debounceTimer;
 
   Future<void> loadInventories() async {
     isLoading = true;
@@ -44,7 +46,10 @@ class InventorySearchController extends ChangeNotifier {
 
   void onSearchChanged(String value) {
     query = value;
-    loadInventories();
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      loadInventories();
+    });
   }
 
   Future<void> updateInventoriesPositions(String newPositions) async {
@@ -81,5 +86,11 @@ class InventorySearchController extends ChangeNotifier {
   Future<void> archiveInventory(String inventoryId) async {
     await _repository.archiveInventoryById(inventoryId);
     await loadInventories();
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 }
