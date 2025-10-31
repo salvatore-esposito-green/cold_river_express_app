@@ -27,9 +27,11 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
     super.initState();
     _controller = InventorySearchController();
     _controller.loadInventories();
-    _searchController.addListener(() {
-      _controller.onSearchChanged(_searchController.text);
-    });
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    _controller.onSearchChanged(_searchController.text);
   }
 
   @override
@@ -48,11 +50,53 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
 
   @override
   void dispose() {
-    _searchController.removeListener(() {});
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     routeObserver.unsubscribe(this);
     _controller.dispose();
     super.dispose();
+  }
+
+  Widget _buildInventoryAvatar(Inventory inventory, bool isSelected) {
+    if (isSelected) {
+      return CircleAvatar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        radius: 24,
+        child: Icon(
+          Icons.check,
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+      );
+    }
+
+    if (inventory.image_path?.isNotEmpty == true) {
+      final file = File(inventory.image_path!);
+      return Hero(
+        tag: inventory.id,
+        child: FutureBuilder<bool>(
+          future: file.exists(),
+          initialData: true,
+          builder: (context, snapshot) {
+            final fileExists = snapshot.data ?? false;
+            return CircleAvatar(
+              radius: 24,
+              backgroundImage: fileExists ? FileImage(file) : null,
+              child: !fileExists
+                  ? const Icon(Icons.image_not_supported, size: 24)
+                  : null,
+            );
+          },
+        ),
+      );
+    }
+
+    return Hero(
+      tag: inventory.id,
+      child: const CircleAvatar(
+        radius: 24,
+        child: Icon(Icons.inbox),
+      ),
+    );
   }
 
   Widget _buildInventoryItem(Inventory inventory) {
@@ -96,41 +140,7 @@ class InventorySearchScreenState extends State<InventorySearchScreen>
         child: ListTile(
           leading: InkWell(
             onTap: () => _controller.toggleSelectInventory(inventory.id),
-            child:
-                isSelected
-                    ? CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      radius: 24,
-                      child: Icon(
-                        Icons.check,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    )
-                    : inventory.image_path?.isNotEmpty == true
-                    ? Hero(
-                      tag: inventory.id,
-                      child: CircleAvatar(
-                        radius: 24,
-                        backgroundImage:
-                            File(inventory.image_path!).existsSync()
-                                ? FileImage(File(inventory.image_path!))
-                                : null,
-                        child:
-                            !File(inventory.image_path!).existsSync()
-                                ? const Icon(
-                                  Icons.image_not_supported,
-                                  size: 24,
-                                )
-                                : null,
-                      ),
-                    )
-                    : Hero(
-                      tag: inventory.id,
-                      child: const CircleAvatar(
-                        radius: 24,
-                        child: Icon(Icons.inbox),
-                      ),
-                    ),
+            child: _buildInventoryAvatar(inventory, isSelected),
           ),
           title: Text('Box N. ${inventory.box_number}'),
           subtitle: Column(
